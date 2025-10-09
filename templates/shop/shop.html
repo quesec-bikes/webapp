@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- page-title -->
+<div class="tf-page-title">
+    <div class="container-full">
+        <div class="heading text-center">Shop
+        </div>
+    </div>
+</div>
+<!-- /page-title -->
+
+<section class="flat-spacing-1">
+  <div class="container">
+
+    {# ------- Parent Categories ------- #}
+    {% if parent_cats %}
+    <h5 class="mb_16">Shop by Category</h5>
+    <div class="tf-grid-layout xl-col-4 tf-col-2 mb_30">
+      {% for pc in parent_cats %}
+      <div class="collection-item hover-img">
+        <div class="collection-inner">
+          <a href="{% url 'shop:category_parent' parent_slug=pc.slug %}" class="collection-image img-style">
+            {% if pc.image %}
+              <img class="lazyload" data-src="{{ pc.image.url }}" src="{{ pc.image.url }}" alt="{{ pc.name }}">
+            {% else %}
+              <img src="{% static 'assets/images/placeholder-600x600.png' %}" alt="{{ pc.name }}">
+            {% endif %}
+          </a>
+          <div class="collection-content">
+            <a href="{% url 'shop:category_parent' parent_slug=pc.slug %}" class="tf-btn collection-title hover-icon">
+              <span>{{ pc.name }}</span><i class="icon icon-arrow1-top-left"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ------- Child Categories (only non-empty) ------- #}
+    {% if child_cats %}
+    <h5 class="mb_16">Shop by Sub-category</h5>
+    <div class="tf-grid-layout xl-col-4 tf-col-2">
+      {% for cc in child_cats %}
+      <div class="collection-item hover-img">
+        <div class="collection-inner">
+          <a href="{% url 'shop:category_child' parent_slug=cc.parent.slug child_slug=cc.slug %}" class="collection-image img-style">
+            {% if cc.image %}
+              <img class="lazyload" data-src="{{ cc.image.url }}" src="{{ cc.image.url }}" alt="{{ cc.name }}">
+            {% else %}
+              <img src="{% static 'assets/images/placeholder-600x600.png' %}" alt="{{ cc.name }}">
+            {% endif %}
+          </a>
+          <div class="collection-content">
+            <a href="{% url 'shop:category_child' parent_slug=cc.parent.slug child_slug=cc.slug %}"
+               class="tf-btn collection-title hover-icon">
+              <span>{{ cc.parent.name }} / {{ cc.name }}</span><i class="icon icon-arrow1-top-left"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="mt_20">No sub-categories with products yet.</p>
+    {% endif %}
+
+  </div>
+</section>
+
+{% include "seo/ld_shop.html" %}
+
+{% endblock %}
+
+{% block models %}
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}

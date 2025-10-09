@@ -1,0 +1,855 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block topbar %} {% include 'partials/topbar.html' %} {% endblock %}
+
+{% block content %}
+<!-- breadcrumb -->
+<div class="tf-breadcrumb">
+    <div class="container">
+        <div class="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
+            <div class="tf-breadcrumb-list">
+                <a href="index.html" class="text">Home</a>
+                <i class="icon icon-arrow-right"></i>
+                {% if parent_category %}
+                <a href="product-frequently-bought-together.html#" class="text">{{ parent_category.name }}</a>
+                <i class="icon icon-arrow-right"></i>
+                {% endif %} {% if category and category.parent %}
+                <a href="product-frequently-bought-together.html#" class="text">{{ category.name }}</a>
+                <i class="icon icon-arrow-right"></i>
+                {% endif %}
+                <span class="text">{{ product.title }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /breadcrumb -->
+
+<!-- default -->
+<section class="flat-spacing-4 pt_0">
+    <div class="tf-main-product section-image-zoom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="tf-product-media-wrap thumbs-bottom sticky-top">
+                        <div class="thumbs-slider">
+                            <div class="swiper tf-product-media-main">
+                                <div class="swiper-wrapper">
+                                    {% for img in all_images %}
+                                    <div class="swiper-slide">
+                                        <a href="{{ img.image.url }}" target="_blank" class="item">
+                                            <img class="tf-image-zoom lazyload" src="{{ img.image.url }}"
+                                                alt="{{ img.alt_text|default:product.title }}">
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="swiper-button-next button-style-arrow thumbs-next"></div>
+                                <div class="swiper-button-prev button-style-arrow thumbs-prev"></div>
+                            </div>
+                            <div class="swiper tf-product-media-thumbs other-image-zoom">
+                                <div class="swiper-wrapper stagger-wrap">
+                                    {% for img in all_images %}
+                                    <div class="swiper-slide stagger-item">
+                                        <div class="item">
+                                            <img class="lazyload" src="{{ img.image.url }}"
+                                                alt="{{ img.alt_text|default:product.title }}">
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tf-product-info-wrap sticky-top">
+                        <div class="tf-zoom-main"></div>
+                        <div class="tf-product-info-list other-image-zoom">
+                            <div class="tf-product-info-title">
+                                <h5>{{ product.title }}</h5>
+                            </div>
+                            <div class="tf-product-info-badges">
+                                <div class="product-status-content">
+                                    <i class="icon-lightning"></i>
+                                    <p class="fw-6">Selling fast! {{ cart_watchers }} people have this in their
+                                        carts.</p>
+                                </div>
+                            </div>
+                            <div class="tf-product-info-price">
+                                <div class="price-on-sale">₹{{ display_price }}</div>
+                                <div class="compare-at-price">₹{{ display_mrp }}</div>
+                                <div class="badges-on-sale"><span>{{ discount_percent }}</span>% OFF</div>
+                            </div>
+                            {% if promo_active and countdown_seconds > 0 %}
+                            <div class="tf-product-info-countdown">
+                                <div class="countdown-wrap">
+                                    <div class="countdown-title">
+                                        <i class="icon-time tf-ani-tada"></i>
+                                        <p>HURRY UP! SALE ENDS IN:</p>
+                                    </div>
+                                    <div class="tf-countdown style-1">
+                                        <div class="js-countdown" data-timer="{{ countdown_seconds }}"
+                                            data-labels="Days :,Hours :,Mins :,Secs"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="tf-product-info-variant-picker">
+                                <div class="variant-picker-item">
+
+                                    <!-- Label: current selection -->
+                                    <div class="variant-picker-label">
+                                        Color & Size:
+                                        <span class="fw-6 variant-picker-label-value value-currentColor">
+                                            {% if selected_variant %}
+                                            {{ selected_variant.color_label }}{% if selected_variant.size %} &
+                                            {{ selected_variant.size.name }}{% endif %}
+                                            {% else %}
+                                            {% for c in color_options %}{% if c.is_active %}{{ c.label }}
+                                            {% endif %}{% endfor %}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                    <!-- COLORS -->
+                                    <div class="variant-picker-values">
+                                        {% for c in color_options %}
+                                        <a href="{{ c.href }}"
+                                            class="hover-tooltip radius-60 color-btn {% if c.is_active %}is-active{% endif %}"
+                                            aria-current="{% if c.is_active %}true{% else %}false{% endif %}"
+                                            title="{{ c.label }}">
+                                            <span class="btn-checkbox"
+                                                style="{% if c.secondary_hex %}background: linear-gradient(135deg, {{ c.primary_hex }} 0 50%, {{ c.secondary_hex }} 50% 100%);{% else %}background: {{ c.primary_hex }};{% endif %}">
+                                            </span>
+                                            <span class="tooltip">{{ c.label }}</span>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+
+                                    <br />
+
+                                    <!-- SIZES -->
+                                    <div class="variant-picker-values">
+                                        {% for s in size_options %}
+                                        {% if s.disabled %}
+                                        <span class="style-text size-btn is-disabled">
+                                            <p>{{ s.label }}</p>
+                                        </span>
+                                        {% else %}
+                                        <a href="{{ s.href }}"
+                                            class="style-text size-btn {% if s.is_active %} is-active{% endif %}"
+                                            aria-current="{% if s.is_active %}true{% else %}false{% endif %}">
+                                            <p>{{ s.label }}</p>
+                                        </a>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="tf-product-info-buy-button">
+                                <form action="{% url 'cart:cart_add' selected_variant.id %}" method="post">
+                                    {% csrf_token %}
+                                    {% if selected_variant and cart_variant_ids and selected_variant.id in cart_variant_ids %}
+                                    <a href="{% url 'cart:cart_page' %}" class="tf-btn btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn btn-add-to-cart">
+                                    <span>Added in cart</span> </a>
+                                    {% else %}
+                                    <div class="tf-product-info-quantity">
+                                        <div class="wg-quantity">
+                                            <a href="{{ qty_minus_url }}"
+                                                class="btn-quantity btn-decrease {% if max_qty <= 0 or qty|default:0 <= 1 %}disabled{% endif %}"
+                                                aria-disabled="{% if max_qty <= 0 or qty <= 1 %}true{% else %}false{% endif %}">
+                                                -
+                                            </a>
+
+                                            <input type="text" class="quantity-product" name="quantity"
+                                                value="{{ qty|default:0 }}" readonly>
+
+                                            <a href="{{ qty_plus_url }}"
+                                                class="btn-quantity btn-increase {% if max_qty <= 0 or qty >= max_qty %}disabled{% endif %}"
+                                                aria-disabled="{% if max_qty <= 0 or qty >= max_qty %}true{% else %}false{% endif %}">
+                                                +
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="next" value="{% url 'cart:cart_page' %}">
+                                    <button type="submit"
+                                        class="tf-btn btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn btn-add-to-cart"><span>Buy
+                                            Now</span>
+                                    </button>
+                                    {% endif %}
+                                
+                                    {% with v=variant|default:selected_variant %}
+                                    {% if v and v.amazon_url %}
+                                    <div class="w-100" id="buyOnAmazonWrap">
+                                        <a href="{{ v.amazon_url }}" class="btns-full" id="buyOnAmazon"
+                                            target="_blank" rel="noopener nofollow">
+                                            Buy On
+                                            <img src="{% static 'assets/images/payments/amazon.png' %}"
+                                                alt="Amazon">
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                </form>
+                            </div>
+                            
+
+                            <div class="tf-product-info-extra-link">
+
+                                <a href="#" onclick="return openWhatsAppEnquiry();" class="tf-product-extra-icon">
+                                    <div class="icon"><i class="icon-question"></i></div>
+                                    <div class="text fw-6">Ask a question</div>
+                                </a>
+                                <a href="product-frequently-bought-together.html#share_social"
+                                    data-bs-toggle="modal" class="tf-product-extra-icon">
+                                    <div class="icon">
+                                        <i class="icon-share"></i>
+                                    </div>
+                                    <div class="text fw-6">Share</div>
+                                </a>
+                            </div>
+                            <div class="tf-product-info-trust-seal">
+                                <div class="tf-product-trust-mess">
+                                    <i class="icon-safe"></i>
+                                    <p class="fw-6">Guarantee Safe <br> Checkout</p>
+                                </div>
+                                <div class="tf-payment">
+                                    
+                                    <img src="{% static 'assets/images/payments/phonepay.png' %}" alt="">
+                                    <img src="{% static 'assets/images/payments/gpay.png' %}" alt="">
+                                    <img src="{% static 'assets/images/payments/paytm.png' %}" alt="">
+                                    <img src="{% static 'assets/images/payments/visa.png' %}" alt="">
+                                    <img src="{% static 'assets/images/payments/img-2.png' %}" alt="">
+                                </div>
+                            </div>
+
+                            {# ==== FBT (Frequently Bought Together) ==== #}
+                            <div class="tf-product-bundle-wrap"
+                                data-fbt-root
+                                data-source-variant="{{ selected_variant.id }}"
+                                data-api-fbt="{% url 'shop:api_fbt' %}"           <!-- e.g. /api/fbt/ -->
+                                data-cart-batch="/cart/batch-add/">
+                            </div>
+                            {# ==== /FBT ==== #}
+
+                            <!-- ===== Coupons / Offers (PDP) ===== -->
+                            <div class="tf-product-info-delivery-return mt_20" id="pdpOffersWrap" style="display:none;">
+                            <div class="swiper tf-offers-swiper">
+                            <div class="swiper-wrapper" id="pdpOffersSlides">
+                            <!-- JS will inject slides here; keeping a tiny skeleton -->
+                            <div class="swiper-slide">
+                            <div class="tf-product-delivery">
+                                <div class="icon"><i class="icon-time"></i></div>
+                                <p>Loading offers…</p>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            <!-- ===== /Coupons / Offers ===== -->
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tf-sticky-btn-atc">
+        <div class="container">
+            <div class="tf-height-observer w-100 d-flex align-items-center">
+
+            <!-- left: image + title -->
+            <div class="tf-sticky-atc-product d-flex align-items-center">
+                <div class="tf-sticky-atc-img">
+                {% if all_images %}
+                    <img src="{{ all_images.0.image.url }}" alt="{{ product.title }}">
+                {% endif %}
+                </div>
+                <div class="tf-sticky-atc-title fw-5 d-xl-block d-none">{{ product.title }}</div>
+            </div>
+
+            <!-- right: variant select + ATC -->
+            <div class="tf-sticky-atc-infos">
+                <form action="{% url 'cart:cart_add' selected_variant.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="tf-sticky-atc-variant-price text-center">
+                        <select class="tf-select" name="variant"
+                                onchange="location.search='?variant='+this.value">
+                        {% for v in variants %}
+                            <option value="{{ v.id }}"
+                            {% if selected_variant and v.id == selected_variant.id %}selected="selected"{% endif %}>
+                            {{ v.color_label }}{% if v.size %} / {{ v.size.name }}{% endif %}
+                            - ₹{% if v.is_promo_active %}{{ v.promo_price }}{% else %}{{ v.sale_price }}{% endif %}
+                            </option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                    {% if selected_variant and cart_variant_ids and selected_variant.id in cart_variant_ids %}
+                    <div class="tf-sticky-atc-btns">
+                        <a href="{% url 'cart:cart_page' %}"
+                        class="tf-btn btn-fill radius-3 justify-content-center fw-6 fs-14 flex-grow-1 animate-hover-btn btn-add-to-cart">
+                        <span>Added in cart</span>
+                        </a>
+                    </div>
+                    {% else %}
+                    <input type="hidden" name="next" value="{% url 'cart:cart_page' %}">
+                    <div class="tf-sticky-atc-btns">
+                        <button type="submit"
+                        class="tf-btn btn-fill radius-3 justify-content-center fw-6 fs-14 flex-grow-1 animate-hover-btn btn-add-to-cart">
+                        <span>Buy Now</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /default -->
+
+<!-- tabs -->
+<section class="flat-spacing-17 pt_0">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="widget-tabs style-has-border">
+                    <ul class="widget-menu-tab">
+                        <li class="item-title active">
+                            <span class="inner">Description</span>
+                        </li>
+                        <li class="item-title">
+                            <span class="inner">Additional Information</span>
+                        </li>
+                        <li class="item-title">
+                            <span class="inner">Review</span>
+                        </li>
+                    </ul>
+                    <div class="widget-content-tab">
+                        <div class="widget-content-inner active">
+                            <div class="">
+                                <ul class="use-disc">
+                                    {% for line in short_points %}
+                                    <li>{{ line }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="widget-content-inner">
+                            <table class="tf-pr-attrs">
+                                <tbody>
+                                    {% if selected_variant %}
+                                    <tr class="tf-attr-pa-color">
+                                        <th class="tf-attr-label">Color</th>
+                                        <td class="tf-attr-value">
+                                            <p>{{ selected_variant.color_label }}</p>
+                                        </td>
+                                    </tr>
+                                    {% if selected_variant.size %}
+                                    <tr class="tf-attr-pa-size">
+                                        <th class="tf-attr-label">Size</th>
+                                        <td class="tf-attr-value">
+                                            <p>{{ selected_variant.size.name }}</p>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endif %}
+
+                                    {% for row in spec_rows %}
+                                    <tr>
+                                        <th class="tf-attr-label">{{ row.title }}</th>
+                                        <td class="tf-attr-value">
+                                            <p>{{ row.value }}</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="widget-content-inner">
+                            <div id="reviews-area"
+                                data-slug="{{ product.slug }}"
+                                data-variant="{{ selected_variant.id }}">
+                                {% include "shop/_reviews_wrapper.html" with product=product variant=selected_variant can_review=can_review reviews_page=reviews_page avg_rating=avg_rating rating_count=rating_count histogram=histogram sort=sort %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /tabs -->
+
+<!-- Related Products -->
+ 
+<!-- /Related Products ->
+
+{% include "seo/ld_product.html" %}
+
+{% endblock %}
+
+{% block models %}
+<!-- modal share social -->
+<div class="modal modalCentered fade modalDemo tf-product-modal modal-part-content" id="share_social">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="header">
+                <div class="demo-title">Share</div>
+                <span class="icon-close icon-close-popup" data-bs-dismiss="modal"></span>
+            </div>
+
+            <div class="overflow-y-auto">
+                <ul class="tf-social-icon d-flex gap-10">
+                <!-- Dynamic hrefs will be injected by JS -->
+                <li><a id="shareWhatsApp" href="#" class="box-icon social-whatsapp"> <i class="icon icon-whatsapp"></i></a></li>
+                <li> <a id="shareInstagram" href="#" class="box-icon social-instagram"> <i class="icon icon-instagram"></i> </a> </li>
+                <li><a id="shareFacebook" href="#" class="box-icon social-facebook bg_line"><i class="icon icon-fb"></i></a></li>
+                <li><a id="shareX"        href="#" class="box-icon social-twiter bg_line"><i class="icon icon-Icon-x"></i></a></li>
+                <li><a id="sharePinterest" href="#" class="box-icon social-pinterest bg_line"><i class="icon icon-pinterest-1"></i></a></li>
+                </ul>
+
+                <form class="form-share" method="post" accept-charset="utf-8" onsubmit="return false;">
+                <fieldset>
+                    <input id="shareInput" type="text" value="" tabindex="0" aria-required="true" readonly>
+                </fieldset>
+                <div class="button-submit">
+                    <button id="shareCopyBtn" class="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn" type="button">
+                    Copy
+                    </button>
+                </div>
+                </form>
+
+                <p class="mt-2 text_caption">Note: Instagram web share links are not direct – copy the link and share it.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal share social -->
+
+<!-- ===== All Offers Modal ===== -->
+<div class="modal modalCentered fade tf-product-modal" id="allOffersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="header">
+                <div class="demo-title">All Offers</div>
+                <span class="icon-close icon-close-popup" data-bs-dismiss="modal"></span>
+            </div>
+            <div class="p_20">
+                <div id="allOffersList">
+                <!-- JS will render full list here -->
+                <div class="tf-product-delivery mb_12">
+                    <div class="icon"><i class="icon-time"></i></div>
+                    <p>Loading…</p>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== /All Offers Modal ===== -->
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}
+
+{% block js %}
+<script>
+  // Helper: selected Color & Size (supports both old & new markup)
+  function getSelectedColorSizeLine() {
+    // Color
+    var colorEl =
+      document.querySelector('.color-btn.is-active .tooltip') ||                // new
+      document.querySelector('.list-color-product .color-swatch.active .tooltip'); // old (fallback)
+    var color = colorEl ? colorEl.textContent.trim() : "";
+
+    // Size
+    var sizeEl =
+      document.querySelector('.size-btn.is-active p, .size-btn.is-active') ||   // new
+      document.querySelector('.size-list a.active span, .size-list a.active');   // old (fallback)
+    var size = sizeEl ? sizeEl.textContent.trim() : "";
+
+    if (!color && !size) return "";
+    var parts = [];
+    if (color) parts.push(color);
+    if (size)  parts.push(size);
+    return "Colors & Size: " + parts.join(" & ");
+  }
+
+  // Build share data once per open
+  function buildShareData() {
+    var pageLink = window.location.href;
+    var title    = "{{ product.title|escapejs }}";
+    var csLine   = getSelectedColorSizeLine();
+    var textForMessengers = pageLink + "\n" + title + (csLine ? ("\n" + csLine) : "");
+    return { pageLink, title, csLine, textForMessengers };
+  }
+
+  // Fill modal dynamically every time it's opened
+  function updateShareModal() {
+    var d = buildShareData();
+
+    // Input + Copy
+    var input = document.getElementById('shareInput');
+    if (input) input.value = d.pageLink;
+
+    // WhatsApp (no number; general share)
+    var wa = document.getElementById('shareWhatsApp');
+    if (wa) wa.href = "https://wa.me/?text=" + encodeURIComponent(d.textForMessengers);
+
+    // Facebook
+    var fb = document.getElementById('shareFacebook');
+    if (fb) fb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(d.pageLink);
+
+    // X (Twitter)
+    var tw = document.getElementById('shareX');
+    if (tw) tw.href = "https://twitter.com/intent/tweet?text=" +
+                      encodeURIComponent(d.title + (d.csLine ? " — " + d.csLine : "") + " " + d.pageLink);
+
+    // Pinterest (image optional; URL-only works too)
+    var pin = document.getElementById('sharePinterest');
+    if (pin) pin.href = "https://pinterest.com/pin/create/button/?url=" +
+                        encodeURIComponent(d.pageLink) +
+                        "&description=" + encodeURIComponent(d.title + (d.csLine ? " — " + d.csLine : ""));
+
+    // Instagram (no prefilled share; copy text + open app/web)
+    var ig = document.getElementById('shareInstagram');
+    if (ig) {
+      ig.href = "#"; // we handle click
+      ig.onclick = async function(e){
+        e.preventDefault();
+        // copy textForMessengers
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(d.textForMessengers);
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = d.textForMessengers;
+            document.body.appendChild(ta);
+            ta.select(); document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+        } catch (err) { console.warn('Copy failed', err); }
+        // try app on mobile, else open web
+        var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        var url = isMobile ? 'instagram://app' : 'https://www.instagram.com/';
+        window.open(url, '_blank');
+        return false;
+      };
+    }
+  }
+
+  // Copy button handler
+  (function(){
+    var btn = document.getElementById('shareCopyBtn');
+    var input = document.getElementById('shareInput');
+    if (btn && input) {
+      btn.addEventListener('click', async function(){
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(input.value);
+          } else {
+            input.select(); document.execCommand('copy'); window.getSelection().removeAllRanges();
+          }
+          btn.innerText = "Copied!";
+          setTimeout(function(){ btn.innerText = "Copy"; }, 1200);
+        } catch(e) { console.warn(e); }
+      });
+    }
+  })();
+
+  // Hook: whenever the Bootstrap modal is about to show, refresh links
+  document.getElementById('share_social')
+    .addEventListener('show.bs.modal', updateShareModal);
+</script>
+
+<!-- Update the WhatsApp enquiry to use the same selectors -->
+    <script>
+        function openWhatsAppEnquiry() {
+            // WhatsApp number: country code + number (no + or spaces)
+            var phone = "917046624986"; // 91 + 7046624986
+
+            var d = buildShareData();
+            var msg = d.pageLink + "\n" + d.title +
+                    (d.csLine ? ("\n" + d.csLine) : "") + "\n" +
+                    "I want to know more about it";
+
+            var url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+            window.open(url, "_blank");
+            return false;
+        }
+    </script>
+
+    <script>
+(function(){
+  const root = document.getElementById('fbtRoot');
+  if(!root) return;
+
+  function readCookie(name){
+    const m = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+  }
+  function getCsrf(){
+    return readCookie('csrftoken') || (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value || '';
+  }
+  function money(n){ try{ return '₹' + Number(n).toFixed(2); } catch(e){ return '₹0.00'; } }
+
+  // selected main variant id (from template)
+  const sourceVariant = root.getAttribute('data-source-variant');
+  if(!sourceVariant){ console.warn('FBT: no source variant'); return; }
+
+  const itemsWrap = document.getElementById('fbtItems');
+  const totalsBox = document.getElementById('fbtTotals');
+  const totalCompareEl = document.getElementById('fbtTotalCompare');
+  const totalSaleEl = document.getElementById('fbtTotalSale');
+  const addBtn = document.getElementById('fbtAddBtn');
+
+  function renderItem(it, idx){
+    const id = 'bundle-ck-' + (idx+1);
+    const compare = it.compare_at_price && it.compare_at_price > it.price
+      ? `<div class="compare-at-price">${money(it.compare_at_price)}</div>` : '';
+    // main item -> forced checked + disabled
+    const checkboxAttrs = it._isMain ? 'checked disabled' : (it.in_stock ? 'checked' : '');
+    return `
+      <div class="tf-bundle-product-item item-has-checkox check mb_15" data-vid="${it.variant_id}">
+        <div class="tf-bundle-check align-self-center">
+          <input type="checkbox" class="fbt-check" ${checkboxAttrs} id="${id}">
+          <label for="${id}"><i class="icon-check"></i></label>
+        </div>
+        <div class="tf-product-bundle-image">
+          <a href="${it.product_url}">
+            <img src="${it.image || ''}" alt="${it.product_title}">
+          </a>
+        </div>
+        <div class="tf-product-bundle-infos">
+          <a href="${it.product_url}" class="tf-product-bundle-title">
+            ${it.product_title} <small>(${it.variant_title || ''})</small>
+          </a>
+          <div class="tf-product-bundle-price">
+            ${compare}
+            <div class="price-on-sale">${money(it.price)}</div>
+          </div>
+          ${it.in_stock || it._isMain ? '' : '<div class="mt-6 text-danger-1">Out of stock</div>'}
+        </div>
+      </div>`;
+  }
+
+  // ✅ total = main (always included) + selected FBT items
+  function computeTotals(data){
+    // every checked item (main + fbts)
+    const picks = Array.from(itemsWrap.querySelectorAll('.fbt-check'))
+      .map((ck,i)=>({ck,i}))
+      .filter(x=>x.ck.checked)
+      .map(x=>data.items[x.i]);
+
+    const sale = picks.reduce((a,b)=> a + Number(b.price||0), 0);
+    const cmp  = picks.reduce((a,b)=> a + Number(b.compare_at_price||b.price||0), 0);
+
+    totalSaleEl.textContent    = money(sale);
+    // show compare only if greater than sale (else keep previous but fainted value if you prefer)
+    totalCompareEl.textContent = (cmp > sale) ? money(cmp) : money(cmp);
+    totalsBox.style.display = data.items?.length ? 'flex' : 'none';
+
+    // main is forced-checked, so always enabled
+    addBtn.disabled = picks.length === 0;
+  }
+
+  function wireEvents(data){
+    itemsWrap.addEventListener('change', e=>{
+      if(e.target.classList.contains('fbt-check')) computeTotals(data);
+    });
+
+    addBtn.addEventListener('click', async ()=>{
+      // use checked boxes (this includes main because it's checked+disabled)
+      const lines = Array.from(itemsWrap.querySelectorAll('.fbt-check'))
+        .map((ck,i)=>({ck,i}))
+        .filter(x=>x.ck.checked)
+        .map(x=>({variant_id: data.items[x.i].variant_id, qty: 1}));
+
+      // extra safety: dedupe & make sure main is present
+      const have = new Set(lines.map(l=>String(l.variant_id)));
+      if(!have.has(String(sourceVariant))){
+        lines.unshift({variant_id: Number(sourceVariant), qty: 1});
+      }
+
+      if(!lines.length) return;
+
+      const prev = addBtn.textContent;
+      addBtn.disabled = true; addBtn.textContent = 'Adding...';
+
+      try{
+        const resp = await fetch("{% url 'cart:cart_batch_add' %}", {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'X-CSRFToken': getCsrf() },
+          body: JSON.stringify({lines})
+        });
+        if(!resp.ok){ throw new Error('HTTP '+resp.status+' '+(await resp.text())); }
+        const json = await resp.json();
+        if(json && json.ok){
+          window.location.href = "{% url 'cart:cart_page' %}";
+        }else{
+          alert('Add failed: ' + (json && json.error ? json.error : 'Unknown error'));
+        }
+      }catch(err){
+        console.error('FBT batch-add failed:', err);
+        alert('Network error');
+      }finally{
+        addBtn.textContent = prev; addBtn.disabled = false;
+      }
+    });
+  }
+
+  const apiURL = "{% url 'shop:api_fbt' %}" + "?variant=" + encodeURIComponent(sourceVariant);
+  fetch(apiURL)
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data=>{
+      if(!data.items || !data.items.length){ root.style.display='none'; return; }
+      itemsWrap.innerHTML = data.items.map((it,idx)=>{
+        // ensure _isMain drives the forced checkbox
+        return renderItem(it, idx);
+      }).join('');
+      wireEvents(data);
+      computeTotals(data);
+    })
+    .catch(err=>{
+      console.error('FBT fetch failed', err);
+      root.style.display='none';
+    });
+})();
+</script>
+
+    <script>
+(function () {
+  // --- styles (same as before) ---
+  const style=document.createElement('style');style.innerHTML=`
+    .pdp-offers .swiper-wrapper{align-items:stretch}.pdp-offers .swiper-slide{width:auto;margin-right:16px}
+    @media (min-width:768px){.pdp-offers .swiper-slide{margin-right:24px}}
+    .pdp-offer-card{border:1px solid var(--line,#eee);border-radius:14px;background:#fff;padding:16px;min-width:280px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    @media (min-width:768px){.pdp-offer-card{min-width:420px}}
+    .pdp-offer-head{font-size:20px;font-weight:700;margin-bottom:6px}.pdp-offer-title{font-weight:700;margin-bottom:4px;color:#1565C0}
+    .pdp-offer-sub{opacity:.8;font-size:14px}.pdp-offer-cta{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .pdp-code-chip{display:inline-block;font-weight:800;padding:8px 12px;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--line,#eee);cursor:pointer}
+    .btn-copy-code{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line,#eee);border-radius:12px;background:transparent;cursor:pointer}
+    .btn-copy-code:active{transform:scale(.98)}.pdp-offer-card.disabled{opacity:.6}`;document.head.appendChild(style);
+
+  // helpers
+  function readCookie(n){const m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return m?m.pop():''}
+  function getCsrf(){return readCookie('csrftoken')||(document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value||''}
+  function money(n){try{return '₹'+Number(n||0).toFixed(2)}catch(e){return '₹0.00'}}
+  function toNum(x){const n=Number(x);return Number.isFinite(n)?n:0}
+
+  // context
+  const pid={{ product.id|default:0 }};
+  const vid={{ selected_variant.id|default:'null' }};
+  const qtyInput=document.querySelector('.quantity-product');
+  const qty=qtyInput?Number(qtyInput.value||1):({{ qty|default:1 }}||1);
+  const API_FOR_PRODUCT="{% url 'shop:api_coupons_for_product' %}";
+  const API_APPLY="{% url 'shop:api_coupons_apply' %}";
+
+  // dom
+  const wrap=document.getElementById('pdpOffersWrap');
+  const slides=document.getElementById('pdpOffersSlides');
+  const modalList=document.getElementById('allOffersList');
+  if(!wrap||!slides) return;
+
+  // cards
+  function cardHTML(item){
+    const ok=(item.ok===true||item.ok===1||item.ok==='true');
+    const header=(item.title&&String(item.title).trim())||'Special Offer';
+    const savings=ok&&toNum(item.savings_amount)>0?`${money(item.savings_amount)} off`:'';
+    const sub=item.description||(!ok?(item.reason||''):'');
+    return `<div class="pdp-offer-card ${ok?'':'disabled'}"><div>
+      <div class="pdp-offer-head">${header}</div>
+      ${savings?`<div class="pdp-offer-title">${savings}</div>`:''}
+      ${sub?`<div class="pdp-offer-sub">${sub}</div>`:''}
+    </div><div class="pdp-offer-cta">
+      <span class="pdp-code-chip" data-code="${item.code}">${item.code}</span>
+      <button class="btn-copy-code" data-code="${item.code}"><i class="icon-copy"></i> Copy Code</button>
+    </div></div>`;
+  }
+  function viewAllCard(){
+    return `<a href="#allOffersModal" data-bs-toggle="modal" class="d-block">
+      <div class="pdp-offer-card">
+        <div>
+          <div class="pdp-offer-head">All Offers & Coupons</div>
+          <div class="pdp-offer-title">View all available coupons</div>
+          <div class="pdp-offer-sub">Browse & copy instantly</div>
+        </div>
+        <div class="pdp-offer-cta"><span class="pdp-code-chip">Browse</span></div>
+      </div>
+    </a>`;
+  }
+
+  async function applyCoupon(code){
+    try{
+      const res=await fetch(API_APPLY,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf(),'X-Requested-With':'XMLHttpRequest'},credentials:'same-origin',body:JSON.stringify({code})});
+      const json=await res.json(); return res.ok && json && json.applied!==false;
+    }catch(e){console.error(e);return false}
+  }
+  function copyText(t){try{navigator.clipboard.writeText(t);return true}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}finally{ta.remove()}return true}}
+  function wire(scope){
+    (scope||document).querySelectorAll('.pdp-code-chip,.btn-copy-code').forEach(el=>{
+      el.addEventListener('click',async function(e){
+        e.preventDefault();
+        const code=this.getAttribute('data-code'); if(!code) return;
+        copyText(code);
+        const ok=await applyCoupon(code);
+        try{window.tfToast&&window.tfToast(ok?'Code copied & applied':'Code copied')}catch(_){}
+      });
+    });
+  }
+
+  async function fetchJSON(url){
+    const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'},credentials:'same-origin'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }
+
+  async function loadOffers(){
+    wrap.style.display='none';
+
+    let data=null;
+    const url=`${API_FOR_PRODUCT}?product_id=${encodeURIComponent(pid)}&variant=${encodeURIComponent(vid||'')}&qty=${encodeURIComponent(qty)}`;
+    try{data=await fetchJSON(url)}catch(e){console.warn('Product offers failed:',e)}
+
+    const allItems=(data&&data.items)||[];
+    // Only coupons applicable to this product (ok==true)
+    const eligible=allItems.filter(it => it && (it.ok===true || it.ok===1 || it.ok==='true'));
+
+    if(!eligible.length){
+      slides.innerHTML="";  // nothing to show anywhere
+      if(modalList) modalList.innerHTML=""; // clear modal too
+      return;
+    }
+
+    wrap.style.display='block';
+    wrap.classList.add('pdp-offers');
+
+    eligible.sort((a,b)=> toNum(b.savings_amount)-toNum(a.savings_amount));
+
+    const top=eligible.slice(0,2);  // LIMIT 2 on cards
+    let html=top.map(it=>`<div class="swiper-slide">${cardHTML(it)}</div>`).join('');
+    html+=`<div class="swiper-slide">${viewAllCard()}</div>`;
+    slides.innerHTML=html;
+
+    // Modal: show ALL applicable coupons (no non-eligible items)
+    if(modalList){ modalList.innerHTML = eligible.map(cardHTML).join(''); }
+
+    try{
+      new Swiper('.tf-offers-swiper',{slidesPerView:'auto',spaceBetween:16,freeMode:true,grabCursor:true,breakpoints:{768:{spaceBetween:24}}});
+    }catch(_){}
+
+    wire(slides); wire(modalList);
+  }
+
+  loadOffers().catch(_=>{ wrap.style.display='none'; });
+})();
+</script>
+<script src="{% static 'assets/js/shop-reviews.js' %}"></script>
+<script defer src="{% static 'assets/js/fbt_widget.js' %}"></script>
+{% endblock %}
+

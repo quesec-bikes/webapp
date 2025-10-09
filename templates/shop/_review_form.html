@@ -1,0 +1,33 @@
+<form id="review-form" class="card" method="post" action="{% url 'shop:review_create' %}">
+  {% csrf_token %}
+  <input type="hidden" name="product" value="{{ product.id }}">
+  <input type="hidden" name="variant" value="{{ variant.id }}">
+  <div class="card-header">
+    <h6 class="fw-7 text_black m-0">Write a review</h6>
+  </div>
+  <div class="card-body">
+    <div class="mb_12">
+      <label class="form-label">Rating</label>
+      <select name="rating" class="form-select" required>
+        <option value="">Select...</option>
+        <option value="5">5 - Excellent</option>
+        <option value="4">4 - Good</option>
+        <option value="3">3 - Average</option>
+        <option value="2">2 - Poor</option>
+        <option value="1">1 - Terrible</option>
+      </select>
+    </div>
+    <div class="mb_12">
+      <label class="form-label">Title (optional)</label>
+      <input type="text" name="title" class="form-control" maxlength="140" placeholder="Short headline">
+    </div>
+    <div class="mb_12">
+      <label class="form-label">Review (optional)</label>
+      <textarea name="body" class="form-control" rows="4" placeholder="Share your experience"></textarea>
+    </div>
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </div>
+    <div id="review-form-msg" class="fs-12 mt_8 text-muted" style="display:none;"></div>
+  </div>
+</form>

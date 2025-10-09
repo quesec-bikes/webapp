@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- page-title -->
+<div class="tf-page-title style-2">
+    <div class="container-full">
+        <div class="heading text-center">{{ page.title }}</div>
+    </div>
+</div>
+<!-- /page-title -->
+
+<!-- page-content -->
+<section class="flat-spacing-9">
+    <div class="container">
+        <div class="flat-title my-0">
+            <div class="page-content sub-title text_black-2">
+                {{ page.content|safe }}
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /page-content -->
+{% endblock %}
+
+{% block models %}
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}

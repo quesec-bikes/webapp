@@ -1,0 +1,930 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- page-style -->
+<style>
+    .checkout-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Card base */
+    .card {
+        background: var(--white);
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 18px;
+    }
+
+    .card-header {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Order summary */
+    .card-summary table td {
+        padding: 6px 0;
+    }
+
+    .card-summary .text-sale {
+        margin-right: 6px;
+    }
+
+    /* ----- tighten vertical spacing between left cards ----- */
+    #ccards .checkout-cards {
+        gap: 12px !important;
+    }
+
+    /* was 20px */
+    #ccards .mb_24 {
+        margin-bottom: 12px !important;
+    }
+
+    /* was 24px */
+    #ccards .card-yourorder {
+        margin-bottom: 12px !important;
+    }
+
+    /* was 20px */
+
+    /* (optional) slightly reduce inside padding to visually compact */
+    #ccards .card {
+        padding: 16px !important;
+    }
+
+    /* was 18px+ */
+
+    /* mobile: a bit tighter */
+    @media (max-width: 575px) {
+        #ccards .checkout-cards {
+            gap: 10px !important;
+        }
+
+        #ccards .mb_24 {
+            margin-bottom: 10px !important;
+        }
+    }
+
+    /* Small version of checkout button */
+    .tf-btn.btn-placeorder-sm {
+        padding: 8px 16px;
+        /* height kam karna */
+        font-size: 14px;
+        /* text bhi thoda chhota */
+        line-height: 1.3;
+        /* button height aur adjust */
+    }
+
+    .tf-toolbar-bottom {
+        height: 52px;
+        /* apni marzi se adjust karo (default sayad 64px+ hoga) */
+        padding: 6px 0;
+        /* upar neeche ka gap kam */
+    }
+
+    /* Toolbar ke andar ke items align properly rahe */
+    .tf-toolbar-bottom .toolbar-item a {
+        font-size: 13px;
+        /* label thoda chhota */
+        padding: 6px;
+        /* icons ke around spacing kam */
+    }
+
+    .tf-toolbar-bottom .toolbar-item {
+        flex: 1;
+        /* barabar width har item */
+        padding: 4px 0;
+        /* upar neeche ka gap kam */
+        height: 44px;
+        /* overall height kam */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Agar button hai andar */
+    .tf-toolbar-bottom .toolbar-item .tf-btn {
+        padding: 6px 12px;
+        /* button ki height chhoti */
+        font-size: 13px;
+        line-height: 1.2;
+
+
+    }
+
+    @media (max-width: 767px) {
+        .tf-btn.btn-icon.justify-content-center {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .tf-page-cart-checkout.widget-wrap-checkout {
+            margin-bottom: 20px;
+            /* fixed bottom button ki height ke equal */
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        /* checkout wrapper ya parent container ko safe space दो */
+        .tf-page-cart-wrap.layout-2 {
+            padding-bottom: 20px;
+            /* = button height (52px) + 18px gap */
+        }
+    }
+
+    /* Mobile-only collapse for Order Summary */
+    @media (max-width: 767px) {
+        .card-summary .card-body table {
+            display: none;
+        }
+
+        .card-summary.is-open .card-body table {
+            display: table;
+        }
+
+        /* on toggle */
+
+        /* tap affordance on header */
+        .card-summary .card-header {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-summary .card-header::after {
+            content: "▾";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            opacity: .7;
+        }
+
+        .card-summary.is-open .card-header::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+    }
+</style>
+<style>
+    /* Your Order card (only this block) */
+    .card-yourorder {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+        overflow: hidden;
+        margin-bottom: 20px;
+        max-width: 100%;
+        /* ensure it stays within left column */
+    }
+
+    /* Header */
+    .card-yourorder .card-header {
+        padding: 14px 18px;
+        background: var(--bg-11);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .card-yourorder .card-header h6 {
+        margin: 0;
+    }
+
+    /* Body */
+    .card-yourorder .card-body {
+        padding: 18px;
+    }
+
+    /* Order list */
+    .card-yourorder .order-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .card-yourorder .order-item {
+        display: grid;
+        grid-template-columns: 56px 1fr auto auto;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line-2);
+    }
+
+    .card-yourorder .order-item:last-child {
+        border-bottom: 0;
+    }
+
+    /* Product thumb */
+    .card-yourorder .oi-media img {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+    }
+
+    /* Info */
+    .card-yourorder .oi-title {
+        margin-bottom: 2px;
+    }
+
+    .card-yourorder .oi-meta {
+        font-size: 12px;
+        color: var(--text-2);
+    }
+
+    /* Qty badge */
+    .card-yourorder .oi-qty {
+        min-width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        background: var(--main-rgba-1);
+        color: var(--main);
+    }
+
+    /* Price */
+    .card-yourorder .oi-price {
+        text-align: right;
+        min-width: 80px;
+        font-weight: 600;
+    }
+
+    /* hide Your Order card on small screens */
+    @media (max-width: 767px) {
+        .card-yourorder {
+            display: none !important;
+        }
+    }
+</style>
+<style>
+    /* Container */
+    .payment-options {
+        margin-top: 8px !important;
+        padding-top: 0 !important;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Uniform card */
+    .pay-card {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+        padding: 16px;
+    }
+
+    .pay-card .pc-head {
+        background: var(--bg-11);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    /* ---------- ROW STYLE (e.g., UPI row, Semi-COD row) ---------- */
+    .pc-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+        border: 1px dashed var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .pc-row:hover {
+        background: var(--bg-10);
+    }
+
+    .pc-row .pc-cell {
+        display: flex;
+        align-items: center;
+    }
+
+    /* hide native radios */
+    .pc-radio {
+        display: none;
+    }
+
+    /* radio dot */
+    .pc-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid var(--line-2);
+        margin-right: 6px;
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    /* ROW: checked -> dot fill (input followed by first .pc-cell) */
+    .pc-row input:checked+.pc-cell .pc-dot {
+        border-color: var(--success);
+    }
+
+    .pc-row input:checked+.pc-cell .pc-dot::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: var(--success);
+    }
+
+    /* ---------- PILL STYLE (PayU / Razorpay) ---------- */
+    .pc-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .pc-pill {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: .25s;
+        justify-content: flex-start;
+    }
+
+    .pc-pill:hover {
+        background: var(--bg-10);
+    }
+
+    /* PILL: checked -> dot fill (dot right after input) */
+    .pc-radio:checked+.pc-dot {
+        border-color: var(--success);
+    }
+
+    .pc-radio:checked+.pc-dot::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: var(--success);
+    }
+
+    /* ---------- ACTIVE BORDER GLOW (parent only) ---------- */
+    /* Modern, safe on current Chrome: */
+    .pc-row:has(input:checked) {
+        border: 1px solid var(--success);
+        box-shadow: 0 0 0 2px var(--success);
+        background: var(--bg-10);
+    }
+
+    .pc-pill:has(input:checked) {
+        border-color: var(--success);
+        box-shadow: 0 0 0 2px var(--success);
+    }
+
+    /* Logos */
+    .pc-logo {
+        height: 22px;
+    }
+
+    .pc-logo-lg {
+        height: 22px;
+    }
+
+    .pc-mini {
+        height: 16px;
+        margin-left: 6px;
+    }
+
+    .pc-chip {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: var(--main-rgba-1);
+        color: var(--main);
+        font-size: 12px;
+        margin-left: 6px;
+    }
+
+    .pc-more {
+        color: var(--text-2);
+        font-size: 12px;
+    }
+
+    /* Banners (used for Semi COD info box etc.) */
+    .pc-emi-banner {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-top: 10px;
+        background: var(--bg-10);
+    }
+
+    @media (max-width: 575px) {
+        .pc-emi-banner {
+            margin-top: 4px;
+            /* kam gap */
+            padding: 8px 10px;
+            /* thoda compact padding bhi */
+        }
+    }
+
+    .pc-emi-badge {
+        height: 24px;
+    }
+
+    .pc-emi-text .fs-12 {
+        color: var(--text-2);
+    }
+
+    /* Title icon tint */
+    .po-title i {
+        color: var(--success);
+        margin-bottom: 8px !important;
+    }
+
+    /* Responsive */
+    @media (max-width:575px) {
+        .pc-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pc-emi-banner {
+            grid-template-columns: 1fr;
+            text-align: left;
+        }
+    }
+
+    /* Default: hide emi-banner */
+    .pay-card .pc-emi-banner {
+        display: none;
+    }
+
+    /* Show emi-banner only if Semi COD radio checked */
+    .pay-card:has(input[value="semi_cod"]:checked) .pc-emi-banner {
+        display: grid;
+    }
+</style>
+<!-- page-style -->
+
+<!-- page-content -->
+<section class="flat-spacing-11">
+    <div class="container">
+        <div class="tf-page-cart-wrap layout-2">
+            <!-- LEFT COLUMN REPLACEMENT -->
+            <div id="ccards" class="tf-page-cart-item">
+                <div class="checkout-cards">
+                    <!-- Delivery Address -->
+                    <div class="card card-address mb_24">
+                        <div class="card-header d-flex justify-content-between align-items-start">
+                            <h6 class="fw-7 text_black">DELIVERY ADDRESS</h6>
+                            <a href="{% url 'cart:checkout' %}" class="card-edit text_success fs-14 fw-6"><i
+                                    class="ph ph-pencil-simple"></i> Edit</a>
+                        </div>
+                        <div class="card-body">
+                            <p class="text_success fs-12 fw-6 mb_10">Delivery to</p>
+                            <h5 class="fw-6 fs-16 mb_10">{{ addr.full_name }}</h5>
+                            <p class="text_black-2 mb_5">{{ addr.address_line }}</p>
+                            <p class="text_black-2 mb_5">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}
+                            </p>
+                            <p class="text_black-2">Mob: {{ addr.mobile }}</p>
+                            <p class="text_black-2">Email: {{ addr.email }}</p>
+                            {% if addr.gst %}<p class="text_black-2">GST: {{ addr.gst }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="card card-summary mb_24">
+                        <div class="card-header">
+                            <h6 class="fw-7 text_black">ORDER SUMMARY</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="w-100 fs-14 mb_15">
+                                <tbody>
+                                    <tr>
+                                        <td>Cart Total ({{ totals.cart_count }})</td>
+                                        <td class="text-end">₹{{ totals.item_total }}</td>
+                                    </tr>
+                                    <tr class="text_success fw-6">
+                                        <td>Discount</td>
+                                        <td class="text-end">−₹{{ totals.discount_total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Delivery</td>
+                                        <td class="text-end">
+                                            {% if totals.shipping_total and totals.shipping_total|add:'0' > 0 %}
+                                            ₹{{ totals.shipping_total }}
+                                            {% else %}
+                                            Free
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-between align-items-center pt_0 line"
+                                id="payable_wrap">
+                                <div>
+                                    <div class="fw-7 text_black">PAYABLE <span class="fs-12">(inc. of
+                                            GST)</span></div>
+                                    <!-- semi-cod ke liye niche wali line dikhegi -->
+                                    <div id="remaining_cod_row" class="fs-12 text_black-2"
+                                        style="display:none;">
+                                        Remaining COD: ₹<span id="remaining_cod_amount">{{
+                                            semi_cod_remaining_rupees }}</span> (80%)
+                                    </div>
+                                </div>
+                                <div class="fw-8 fs-18 text_black">₹<span id="payable_amount">{{
+                                        totals.grand_total }}</span>/-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- YOUR ORDER (moved under cards) -->
+                    <div class="card card-yourorder">
+                        <div class="card-header">
+                            <h6 class="fw-7 text_black">YOUR ORDER</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="order-list">
+                                {% for it in cart_items %}
+                                <li class="order-item">
+                                    <div class="oi-media">
+                                        <img src="{{ it.image_url }}" alt="{{ it.title }}">
+                                    </div>
+                                    <div class="oi-info">
+                                        <div class="oi-title fw-6">{{ it.title }}</div>
+                                        <div class="oi-meta text_black-2 fs-12">
+                                            {{ it.variant_text|default:"—" }}
+                                        </div>
+                                    </div>
+                                    <div class="oi-qty">{{ it.qty }}</div>
+                                    <div class="oi-price fw-6">₹{{ it.line_total }}</div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- RIGHT COLUMN REPLACEMENT -->
+            <div class="tf-page-cart-footer">
+                <div class="tf-cart-footer-inner">
+                    <h5 class="fw-5 mb_20">PAYMENT OPTIONS</h5>
+                    <form method="post" action="{% url 'orders:initiate' %}"
+                        class="tf-page-cart-checkout widget-wrap-checkout" id="payForm"
+                        data-grand="{{ totals.grand_total }}" data-adv="{{ semi_cod_advance_rupees }}"
+                        data-rem="{{ semi_cod_remaining_rupees }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="order_number" value="{{ pending_order.order_number }}">
+                        <input type="hidden" name="payment_method" id="payment_method" value="">
+                        <!-- PAYMENT OPTIONS (Right column) -->
+                        <div class="payment-options">
+                            <!-- Card 1: UPI promo -->
+                            <div class="pay-card">
+                                <div class="pc-head fw-6">Instant Discount on HDFC Bank Card EMI &amp; UPI Txn.
+                                </div>
+                                <label class="pc-row" data-method="upi_hdfc_any">
+                                    <input type="radio" name="pay_group_hdfc" value="upi_any" class="pc-radio">
+                                    <div class="pc-cell d-flex align-items-center gap-10">
+                                        <span class="pc-dot"></span>
+                                        <img src="{% static 'assets/images/payments/upi.png' %}" alt="UPI" class="pc-logo">
+                                    </div>
+                                    <div class="pc-cell text-end">
+                                        <img src="{% static 'assets/images/payments/phonepe_c.png' %}" class="pc-mini" alt="">
+                                        <img src="{% static 'assets/images/payments/gpay_c.png' %}" class="pc-mini" alt="">
+                                        <img src="{% static 'assets/images/payments/paytm_c.png' %}" class="pc-mini" alt="">
+                                        <span class="pc-more"> &amp; More</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Card 2: Gateway choice -->
+                            <div class="pay-card">
+                                <div class="pc-head fw-6">
+                                    Credit Card, Debit Card, Netbanking, UPI, Wallet &amp; EMIs.
+                                </div>
+                                <div class="pc-grid">
+                                    <label class="pc-pill" data-method="payu">
+                                        <input type="radio" name="gateway" value="payu" class="pc-radio">
+                                        <span class="pc-dot"></span>
+                                        <img src="{% static 'assets/images/payments/payu.png' %}" alt="PayU" class="pc-logo-lg">
+                                    </label>
+                                    <label class="pc-pill" data-method="razorpay">
+                                        <input type="radio" name="gateway" value="razorpay" class="pc-radio">
+                                        <span class="pc-dot"></span>
+                                        <img src="{% static 'assets/images/payments/razorpay.png' %}" alt="Razorpay"
+                                            class="pc-logo-lg">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: cash on delivery -->
+                            {% if semi_cod_allowed %}
+                            <div class="pay-card">
+                                <label class="pc-row" data-method="semi_cod">
+                                    <input type="radio" name="emi_partner" value="semi_cod" class="pc-radio">
+                                    <div class="pc-cell d-flex align-items-center gap-10">
+                                        <span class="pc-dot"></span>
+                                        <img src="{% static 'assets/images/payments/cod.png' %}" class="pc-logo-lg" alt="Semi COD">
+                                    </div>
+                                </label>
+
+                                <div class="pc-note text_black-2">
+                                    Pay <b>20%</b> now online, rest <b>80%</b> on delivery
+                                </div>
+
+                                <div class="pc-emi-banner">
+                                    <div class="pc-emi-text">
+                                        <div class="fw-6">Advance: ₹{{ semi_cod_advance_rupees }} (20%)</div>
+                                        <div class="fs-12">Remaining COD: ₹{{ semi_cod_remaining_rupees }} (80%)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        <button type="submit"
+                            class="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center">Place
+                            order</button>
+
+                        <!-- toolbar-bottom -->
+                        <div class="tf-toolbar-bottom type-1150">
+                            <div class="toolbar-item">
+
+                                <button type="submit"
+                                    class="tf-btn btn-fill radius-3 fw-6 animate-hover-btn btn-placeorder-sm"
+                                    style="width: 100%;"><a href="checkout_step1.html"
+                                        class="tf-btn btn-fill radius-3 fw-6 animate-hover-btn btn-placeorder-sm"
+                                        style="width: 100%; text-align: center;">
+                                        Place Order
+                                    </a></button>
+                            </div>
+                        </div>
+                        <!-- /toolbar-bottom -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- page-content -->
+{% endblock %}
+
+{% block js %}
+<script>
+    (function () {
+        const pills = document.querySelectorAll('.pc-pill');
+        pills.forEach(p => {
+            p.addEventListener('click', () => {
+                pills.forEach(x => x.classList.remove('is-active'));
+                p.classList.add('is-active');
+                p.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        const scope = document.querySelector('.payment-options');
+        if (!scope) return;
+
+        // On click anywhere inside a payment label, make it the only selected one
+        scope.addEventListener('click', (e) => {
+            const label = e.target.closest('label.pc-row, label.pc-pill');
+            if (!label || !scope.contains(label)) return;
+
+            const input = label.querySelector('input.pc-radio');
+            if (!input) return;
+
+            // Uncheck every payment radio first
+            scope.querySelectorAll('input.pc-radio').forEach(r => r.checked = false);
+
+            // Check only the clicked one
+            input.checked = true;
+
+            // Fire change so any CSS/JS depending on :checked/:has updates
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        // Optional: if multiple were pre-checked, keep only the first
+        const all = [...scope.querySelectorAll('input.pc-radio')];
+        const firstChecked = all.find(r => r.checked);
+        if (firstChecked) {
+            all.forEach(r => { if (r !== firstChecked) r.checked = false; });
+        }
+    })();
+</script>
+
+<script>
+    (function () {
+        function getOrderSummaryCard() {
+            // Try a dedicated class first if it exists
+            let card = document.querySelector('.card-summary');
+            if (card) return card;
+            // Fallback: find a card whose header has "ORDER SUMMARY"
+            const headings = document.querySelectorAll('.card .card-header h6, .card .card-header h5, .card h6, .card h5');
+            for (const h of headings) {
+                if (h.textContent && /ORDER SUMMARY/i.test(h.textContent.trim())) {
+                    return h.closest('.card');
+                }
+            }
+            return null;
+        }
+
+        function getPaymentContainer() {
+            // Your payment wrapper lives in the right column/footer area
+            return document.querySelector('.tf-page-cart-footer')
+                || document.querySelector('.payment-options')
+                || null;
+        }
+
+        // Keep original parent to restore if needed (desktop)
+        const orderSummary = getOrderSummaryCard();
+        const payment = getPaymentContainer();
+        if (!orderSummary || !payment) return;
+
+        const originalParent = orderSummary.parentNode;
+        const afterPaymentMarker = document.createComment('ORDER_SUMMARY_AFTER_PAYMENT');
+
+        function arrange() {
+            const isMobile = window.innerWidth <= 767;
+
+            if (isMobile) {
+                // Insert a marker after payment once
+                if (!afterPaymentMarker.parentNode) {
+                    payment.parentNode.insertBefore(afterPaymentMarker, payment.nextSibling);
+                }
+                // Move order summary to just after payment
+                payment.parentNode.insertBefore(orderSummary, afterPaymentMarker.nextSibling);
+            } else {
+                // Put it back to its original spot on desktop
+                if (originalParent && orderSummary.parentNode !== originalParent) {
+                    originalParent.appendChild(orderSummary);
+                }
+            }
+        }
+
+        // Run now and on resize (debounced)
+        arrange();
+        let t;
+        window.addEventListener('resize', () => {
+            clearTimeout(t);
+            t = setTimeout(arrange, 150);
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        const card = document.querySelector('.card-summary');
+        if (!card) return;
+
+        const header = card.querySelector('.card-header');
+        const table = card.querySelector('.card-body table');
+
+        // ensure desktop shows details; mobile starts collapsed
+        function syncState() {
+            if (window.innerWidth <= 767) {
+                card.classList.remove('is-open');      // collapsed by default
+            } else {
+                card.classList.add('is-open');         // desktop always expanded
+                if (table) table.style.display = 'table';
+            }
+        }
+
+        header.addEventListener('click', function () {
+            if (window.innerWidth <= 767) card.classList.toggle('is-open');
+        });
+
+        syncState();
+        let t;
+        window.addEventListener('resize', () => {
+            clearTimeout(t);
+            t = setTimeout(syncState, 150);
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        const form = document.getElementById('payForm');
+        const methodInput = document.getElementById('payment_method');
+        const amtEl = document.getElementById('payable_amount');
+        const remRow = document.getElementById('remaining_cod_row');
+        const remAmt = document.getElementById('remaining_cod_amount');
+        if (!form || !methodInput || !amtEl) return;
+
+        const GRAND = parseInt(form.dataset.grand || '0', 10);
+        const ADV = parseInt(form.dataset.adv || '0', 10);
+        const REM = parseInt(form.dataset.rem || '0', 10);
+
+        function renderPayable() {
+            if (methodInput.value === 'semi_cod') {
+                // 20% advance show + remaining line visible
+                amtEl.textContent = isNaN(ADV) ? GRAND : ADV;
+                if (remRow && remAmt) {
+                    remAmt.textContent = isNaN(REM) ? Math.max(GRAND - ADV, 0) : REM;
+                    remRow.style.display = '';
+                }
+            } else {
+                // full amount; hide remaining
+                amtEl.textContent = GRAND;
+                if (remRow) remRow.style.display = 'none';
+            }
+        }
+
+        // Run on load (in case something is preselected)
+        renderPayable();
+
+        // Update whenever user chooses a method
+        document.querySelector('.payment-options')?.addEventListener('click', (e) => {
+            const label = e.target.closest('label.pc-row, label.pc-pill');
+            if (!label) return;
+            // methodInput is already set by your existing script — just re-render
+            // but be defensive: if missing, pick from data-method on label/parent
+            if (!methodInput.value) {
+                const holder = label.hasAttribute('data-method') ? label : label.closest('[data-method]');
+                methodInput.value = holder ? holder.getAttribute('data-method') : '';
+            }
+            renderPayable();
+        });
+
+        // Also run when radios change (keyboard/select)
+        document.querySelectorAll('.payment-options input.pc-radio').forEach(radio => {
+            radio.addEventListener('change', renderPayable);
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        const container = document.querySelector('.payment-options');
+        const methodInput = document.getElementById('payment_method');
+        const form = document.getElementById('payForm');
+
+        if (!container || !methodInput || !form) return;
+
+        // click on any label selects only that and sets canonical method
+        container.addEventListener('click', (e) => {
+            const label = e.target.closest('label.pc-row, label.pc-pill');
+            if (!label) return;
+
+            // uncheck all radios
+            container.querySelectorAll('input.pc-radio').forEach(r => r.checked = false);
+            const radio = label.querySelector('input.pc-radio');
+            if (radio) radio.checked = true;
+
+            // set canonical method
+            methodInput.value = label.getAttribute('data-method') || '';
+        });
+
+        // guard on submit
+        form.addEventListener('submit', (e) => {
+            if (!methodInput.value) {
+                e.preventDefault();
+                alert('Please choose a payment method.');
+            }
+        });
+
+        // Mobile bottom toolbar button (inside form) is already <button>; 
+        // if you keep the extra bottom toolbar outside form, wire it:
+        const externalBtn = document.querySelector('.tf-toolbar-bottom:not(#inside) .tf-btn');
+        if (externalBtn) {
+            externalBtn.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                form.requestSubmit();
+            });
+        }
+    })();
+</script>
+{% endblock %}

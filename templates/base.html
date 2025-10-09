@@ -1,0 +1,411 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <title>Ecomus - Ultimate HTML</title>
+
+    <meta name="author" content="themesflat.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- font -->
+    <link rel="stylesheet" href="{% static 'assets/fonts/fonts.css' %}">
+    <!-- Icons -->
+    <link rel="stylesheet" href="{% static 'assets/fonts/font-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/drift-basic.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/photoswipe.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/swiper-bundle.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
+    <link rel="stylesheet " type="text/css" href="{% static 'assets/css/styles.css' %}" />
+
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="{{ branding.favicon.url }}">
+    <link rel="apple-touch-icon-precomposed" href="{{ branding.favicon.url }}">
+
+</head>
+
+<body class="preload-wrapper popup-loader">
+
+    <!-- preload -->
+    <div class="preload preload-container">
+        <div class="preload-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <!-- /preload -->
+
+    <div id="wrapper">
+
+        {% block topbar %}{% endblock %}
+
+        <!-- Header -->
+        <header id="header" class="header-default {% block header-class %} {% endblock %}">
+            {% include 'partials/header.html' %}
+        </header>
+        <!-- /Header -->
+
+        {% block content %}{% endblock %}
+
+
+        <!-- Footer -->
+        {% include 'partials/footer.html' %}
+        <!-- /Footer -->
+
+    </div>
+
+    <!-- mobile menu -->
+    {% include 'partials/mobile-header.html' %}
+    <!-- /mobile menu -->
+
+    <!-- gotop -->
+    <div class="progress-wrap">
+        <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
+            <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"
+                style="transition: stroke-dashoffset 10ms linear 0s; stroke-dasharray: 307.919, 307.919; stroke-dashoffset: 286.138;">
+            </path>
+        </svg>
+    </div>
+    <!-- /gotop -->
+
+    
+
+    <!-- canvasSearch -->
+    <div class="offcanvas offcanvas-end canvas-search" id="canvasSearch">
+        <div class="canvas-wrapper">
+            <header class="tf-search-head">
+                <div class="title fw-5">
+                    Search our site
+                    <div class="close">
+                        <span class="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close"></span>
+                    </div>
+                </div>
+                <div class="tf-search-sticky">
+                    <form class="tf-mini-search-frm">
+                        <fieldset class="text">
+                            <input type="text" placeholder="Search" class="" name="text" tabindex="0" value=""
+                                aria-required="true" required="">
+                        </fieldset>
+                        <button class="" type="submit"><i class="icon-search"></i></button>
+                    </form>
+                </div>
+
+            </header>
+            <div class="canvas-body p-0">
+                <div class="tf-search-content">
+
+                    <!-- QUICK LINKS (optional, static) -->
+                    <div class="tf-col-quicklink" id="searchQuickLinks">
+                        <div class="tf-search-content-title fw-5">Quick link</div>
+                        <ul class="tf-quicklink-list">
+                            <li class="tf-quicklink-item"><a href="/shop/" class="">Fasion</a></li>
+                            <li class="tf-quicklink-item"><a href="/shop/" class="">Men</a></li>
+                            <li class="tf-quicklink-item"><a href="/shop/" class="">Women</a></li>
+                            <li class="tf-quicklink-item"><a href="/shop/" class="">Accessories</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- INSPIRATION (Top popular) -->
+                    <div class="tf-col-content" id="searchInspiration">
+                        <div class="tf-search-content-title fw-5">Need some inspiration?</div>
+                        <div class="tf-search-hidden-inner" id="inspirationList"></div>
+                    </div>
+
+                    <!-- LIVE RESULTS -->
+                    <div class="tf-cart-hide-has-results d-none" id="searchResultsWrap">
+                        <div class="tf-col-content">
+                            <div class="tf-search-hidden-inner" id="searchResultsList"></div>
+                            <div class="mt_20">
+                                <a href="#" id="searchViewMore"
+                                    class="fade-item fade-item-3 tf-btn btn-fill animate-hover-btn btn-xl radius-3 d-none">View
+                                    More</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- /canvasSearch -->
+
+    <!-- toolbarShopmb -->
+    <div class="offcanvas offcanvas-start canvas-mb toolbar-shop-mobile" id="toolbarShopmb">
+        <span class="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close"></span>
+        <div class="mb-canvas-content">
+            <div class="mb-body">
+                <ul class="nav-ul-mb" id="wrapper-menu-navigation">
+                    {% for c in menu_flat_categories %}
+                    <li class="nav-mb-item">
+                        {% if c.parent_id %}
+                        <a href="{% url 'shop:category_child' parent_slug=c.parent.slug child_slug=c.slug %}"
+                            class="tf-category-link mb-menu-link">
+                            <div class="image">
+                                <img src="{{ c.image.url }}" alt="{{ c.name }}">
+                            </div>
+                            <span>{{ c.name }}</span>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'shop:category_parent' parent_slug=c.slug %}"
+                            class="tf-category-link mb-menu-link">
+                            <div class="image">
+                                <img src="{{ c.image.url }}" alt="{{ c.name }}">
+                            </div>
+                            <span>{{ c.name }}</span>
+                        </a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mb-bottom">
+                <a href="/shop" class="tf-btn fw-5 btn-line">View all collection<i
+                        class="icon icon-arrow1-top-left"></i></a>
+            </div>
+        </div>
+    </div>
+    <!-- /toolbarShopmb -->
+
+    {% block models %}{% endblock %}
+
+
+    <!-- Javascript -->
+
+    <script type="text/javascript" src="{% static 'assets/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/swiper-bundle.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/carousel.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/count-down.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/bootstrap-select.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/lazysize.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/bootstrap-select.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/drift.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/wow.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/multiple-modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/js/main.js' %}"></script>
+
+    <script src="{% static 'assets/js/sibforms.js' %}" defer></script>
+
+    <script type="module" src="{% static 'assets/js/model-viewer.min.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/zoom.js' %}"></script>
+
+    <script>
+        // Thumbnails swiper (no arrows)
+        const thumbsSwiper = new Swiper('.tf-product-media-thumbs', {
+            slidesPerView: 6,
+            spaceBetween: 12,
+            freeMode: true,
+            watchSlidesProgress: true,
+            watchSlidesVisibility: true,
+            grabCursor: true,
+            breakpoints: {
+                0: { slidesPerView: 4, spaceBetween: 8 },
+                576: { slidesPerView: 5, spaceBetween: 10 },
+                992: { slidesPerView: 6, spaceBetween: 12 }
+            }
+        });
+
+        // Main swiper (custom arrows + loop)
+        const mainSwiper = new Swiper('.tf-product-media-main', {
+            loop: true,
+            navigation: {
+                nextEl: '.thumbs-next',
+                prevEl: '.thumbs-prev',
+            },
+            thumbs: {
+                swiper: thumbsSwiper   // link with thumbnails
+            }
+        });
+
+        // Extra safety: click on thumb -> go to that slide (works with loop)
+        thumbsSwiper.on('click', function (sw) {
+            if (typeof sw.clickedIndex !== 'undefined') {
+                mainSwiper.slideToLoop(sw.clickedIndex);
+            }
+        });
+
+        function setAmazonLink(url) {
+            const wrap = document.getElementById('buyOnAmazonWrap');
+            const a = document.getElementById('buyOnAmazon');
+
+            if (url) {
+                a.href = url;
+                wrap.classList.remove('d-none');   // show
+            } else {
+                a.removeAttribute('href');
+                wrap.classList.add('d-none');      // hide
+            }
+        }
+
+    </script>
+
+    <script>
+        (function () {
+            const offcanvas = document.getElementById('canvasSearch');
+            if (!offcanvas) return;
+
+            const form = offcanvas.querySelector('.tf-mini-search-frm');
+            const input = form.querySelector('input[name="text"]');
+
+            const quickLinks = document.getElementById('searchQuickLinks');     // Quick link wrapper
+            const quickList = quickLinks ? quickLinks.querySelector('.tf-quicklink-list') : null;
+
+            const inspWrap = document.getElementById('searchInspiration');      // "Need some inspiration?"
+            const inspList = document.getElementById('inspirationList');
+
+            const resWrap = document.getElementById('searchResultsWrap');
+            const resList = document.getElementById('searchResultsList');
+            const viewMore = document.getElementById('searchViewMore');
+
+            // ---------- state helpers ----------
+            function showInspiration() {
+                if (quickLinks) quickLinks.classList.remove('d-none');
+                if (inspWrap) inspWrap.classList.remove('d-none');
+                resWrap.classList.add('d-none');
+                viewMore.classList.add('d-none');
+            }
+            function showLoading() {
+                if (quickLinks) quickLinks.classList.add('d-none');
+                if (inspWrap) inspWrap.classList.add('d-none');
+                resWrap.classList.remove('d-none');
+                viewMore.classList.add('d-none');
+                resList.innerHTML = '<div class="py-3">Searching…</div>';
+            }
+            function showNoResults() {
+                resList.innerHTML = '<div class="py-3">No results</div>';
+                viewMore.classList.add('d-none');
+            }
+            function setViewMore(q, total) {
+                if (total > 5) {
+                    viewMore.href = '/search/?q=' + encodeURIComponent(q);
+                    viewMore.classList.remove('d-none');
+                } else {
+                    viewMore.classList.add('d-none');
+                }
+            }
+
+            // ---------- render results (variant-level) ----------
+            function renderList(items) {
+                const qForTrack = encodeURIComponent(input.value || '');
+                return (items || []).map(it => `
+      <div class="tf-loop-item">
+        <div class="image">
+          <a href="${it.url || '#'}"
+             data-product-id="${it.id}"
+             data-variant-id="${it.variant_id || ''}"
+             data-q="${qForTrack}"
+             class="sr-link">
+            ${it.thumb ? `<img src="${it.thumb}" alt="${it.title}" loading="lazy">` : ``}
+          </a>
+        </div>
+        <div class="content">
+          <a href="${it.url || '#'}"
+             data-product-id="${it.id}"
+             data-variant-id="${it.variant_id || ''}"
+             data-q="${qForTrack}"
+             class="sr-link">
+            ${it.title}${it.variant_label ? ` — <small>${it.variant_label}</small>` : ``}
+          </a>
+          <div class="tf-product-info-price">
+            ${(it.promo && it.mrp)
+                        ? `<div class="compare-at-price">₹${it.mrp}</div><div class="price-on-sale fw-6">₹${it.price || ''}</div>`
+                        : `<div class="price fw-6">₹${it.price || ''}</div>`
+                    }
+          </div>
+        </div>
+      </div>
+    `).join('');
+            }
+
+            // ---------- Quick links: categories (load once) ----------
+            async function loadCategoriesOnce() {
+                if (!quickLinks || !quickList || quickList.dataset.filled === '1') return;
+                try {
+                    const r = await fetch('/api/categories/');
+                    const data = await r.json();
+                    const items = (data.items || []).map(
+                        it => `<li class="tf-quicklink-item"><a href="#" data-cat-id="${it.id}">${it.label}</a></li>`
+                    ).join('');
+                    quickList.innerHTML = items || '<li class="tf-quicklink-item text_muted">No categories</li>';
+                    quickList.dataset.filled = '1';
+                } catch (e) {
+                    quickList.innerHTML = '<li class="tf-quicklink-item text_muted">Failed to load</li>';
+                }
+            }
+
+            // ---------- Inspiration (popular) load once ----------
+            async function loadInspirationOnce() {
+                if (!inspList || inspList.dataset.filled === '1') return;
+                try {
+                    const r = await fetch('/api/search/?q=&limit=5');
+                    const data = await r.json();
+                    inspList.innerHTML = renderList(data.items);
+                    inspList.dataset.filled = '1';
+                } catch (e) { /* silent */ }
+            }
+
+            // ---------- debounce search ----------
+            let t = null;
+            input.addEventListener('input', function () {
+                const q = input.value.trim();
+                if (q.length < 2) {
+                    showInspiration();
+                    loadCategoriesOnce();
+                    loadInspirationOnce();
+                    return;
+                }
+                clearTimeout(t);
+                t = setTimeout(async () => {
+                    showLoading();
+                    try {
+                        const r = await fetch('/api/search/?q=' + encodeURIComponent(q) + '&limit=5');
+                        const data = await r.json();
+                        if ((data.total || 0) === 0) { showNoResults(); return; }
+                        resList.innerHTML = renderList(data.items);
+                        setViewMore(q, data.total || 0);
+                    } catch (e) {
+                        resList.innerHTML = '<div class="py-3">Error</div>';
+                    }
+                }, 250);
+            });
+
+            // ---------- form submit (Enter) -> full results ----------
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                const q = input.value.trim();
+                if (!q) return;
+                window.location.href = '/search/?q=' + encodeURIComponent(q);
+            });
+
+            // ---------- reset state on open ----------
+            offcanvas.addEventListener('shown.bs.offcanvas', function () {
+                input.value = '';
+                showInspiration();
+                loadCategoriesOnce();
+                loadInspirationOnce();
+                setTimeout(() => input.focus(), 150);
+            });
+
+            // ---------- click tracking ----------
+            offcanvas.addEventListener('click', function (e) {
+                const a = e.target.closest('a.sr-link');
+                if (!a) return;
+                try {
+                    const pid = a.getAttribute('data-product-id');
+                    const vid = a.getAttribute('data-variant-id') || '';
+                    const q = decodeURIComponent(a.getAttribute('data-q') || '');
+                    navigator.sendBeacon('/api/track/click/', JSON.stringify({ q: q, product_id: pid, variant_id: vid }));
+                } catch (e) { /* silent */ }
+            });
+        })();
+    </script>
+
+    {% block js %}{% endblock %}
+
+</body>
+
+</html>

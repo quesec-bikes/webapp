@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- page-title -->
+<div class="tf-page-title">
+    <div class="container-full">
+        <div class="row">
+            <div class="col-12">
+                <div class="heading text-center">{{ category.name }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /page-title -->
+
+{% if variants_page and variants_page.object_list %}
+<section class="flat-spacing-1">
+    <div class="container-full">
+        <div class="tf-shop-control grid-3 align-items-center">
+            <div class="tf-control-filter">
+                <a href="shop-fullwidth.html#filterShop" data-bs-toggle="offcanvas" aria-controls="offcanvasLeft"
+                    class="tf-btn-filter"><span class="icon icon-filter"></span><span class="text">Filter</span></a>
+            </div>
+            <div class="tf-control-sorting d-flex justify-content-end">
+                <div class="tf-dropdown-sort" data-bs-toggle="dropdown">
+                    <div class="btn-select">
+                        <span class="text-sort-value">Featured</span>
+                        <span class="icon icon-arrow-down"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="select-item active">
+                            <span class="text-value-item">Featured</span>
+                        </div>
+                        <div class="select-item">
+                            <span class="text-value-item">Best selling</span>
+                        </div>
+                        <div class="select-item" data-sort-value="price-low-high">
+                            <span class="text-value-item">Price, low to high</span>
+                        </div>
+                        <div class="select-item" data-sort-value="price-high-low">
+                            <span class="text-value-item">Price, high to low</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper-control-shop">
+            <div class="wrapper-shop">
+                <div class="container">
+                    <div class="row">
+                        {% for v in variants_page.object_list %}
+                        <div class="col-lg-4 col-md-6 col-12 mb-4">
+                            <div class="blog-article-item">
+                                <div class="article-thumb">
+                                    {# PDP link (add variant id as query param) #}
+                                    {% if v.product.category.parent %}
+                                    <a href="{% url 'shop:product_detail_child' parent_slug=v.product.category.parent.slug child_slug=v.product.category.slug slug=v.product.slug %}?variant={{ v.id }}">
+                                    {% else %}
+                                    <a href="{% url 'shop:product_detail_parent' parent_slug=v.product.category.slug slug=v.product.slug %}?variant={{ v.id }}">
+                                    {% endif %}
+
+                                    <img src="{{ v.get_main_image_url }}" alt="{{ v.product.title }}">
+                                    </a>
+                                    <div class="article-label">
+                                    {% with cat=v.product.category %}
+                                        {% if cat.parent %}
+                                        <a class="btn-sm tf-btn"
+                                            href="{% url 'shop:category_child' parent_slug=cat.parent.slug child_slug=cat.slug %}">
+                                            {{ cat.name }}
+                                        </a>
+                                        {% else %}
+                                        <a class="btn-sm tf-btn"
+                                            href="{% url 'shop:category_parent' parent_slug=cat.slug %}">
+                                            {{ cat.name }}
+                                        </a>
+                                        {% endif %}
+                                    {% endwith %}
+                                    </div>
+                                </div>
+
+                                <div class="article-content">
+                                <div class="article-title font-sora">
+                                    {% if v.product.category.parent %}
+                                    <a href="{% url 'shop:product_detail_child' parent_slug=v.product.category.parent.slug child_slug=v.product.category.slug slug=v.product.slug %}?variant={{ v.id }}">{{ v.color_label }} {{ v.product.title }} - {{ v.size.name }} </a>
+                                    {% else %}
+                                    <a href="{% url 'shop:product_detail_parent' parent_slug=v.product.category.slug slug=v.product.slug %}?variant={{ v.id }}">{{ v.color_label }} {{ v.product.title }} - {{ v.size.name }}</a>
+                                    {% endif %}
+
+                                    <div class="mt-1">
+                                    <div class="card-price">
+                                    {% if v.promo_price %}
+                                        <span class="old">₹{{ v.mrp }}</span>
+                                        <span class="new">₹{{ v.promo_price }}</span>
+                                    {% elif v.sale_price %}
+                                        {% if v.mrp and v.sale_price < v.mrp %}<span class="old">₹{{ v.mrp }}</span>{% endif %}
+                                        <span class="new">₹{{ v.sale_price }}</span>
+                                    {% else %}
+                                        <span class="new">₹{{ v.mrp|default_if_none:"0" }}</span>
+                                    {% endif %}
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <!-- pagination -->
+                        {% if variants_page and variants_page.paginator.num_pages > 1 %}
+                        <ul class="tf-pagination-wrap tf-pagination-list">
+
+                            {# Prev #}
+                            <li class="{% if not variants_page.has_previous %}disabled{% endif %}">
+                                <a class="pagination-link animate-hover-btn"
+                                href="{% if variants_page.has_previous %}?{{ qs_keep }}{% if qs_keep %}&{% endif %}page={{ variants_page.previous_page_number }}{% else %}#{% endif %}">
+                                <span class="icon icon-arrow-left"></span>
+                                </a>
+                            </li>
+
+                            {# First + leading ellipsis #}
+                            {% if variants_page.number > 3 %}
+                                <li>
+                                <a class="pagination-link animate-hover-btn"
+                                    href="?{{ qs_keep }}{% if qs_keep %}&{% endif %}page=1">1</a>
+                                </li>
+                                <li><span class="pagination-link">…</span></li>
+                            {% endif %}
+
+                            {# Window around current page (-2 .. +2) #}
+                            {% for i in variants_page.paginator.page_range %}
+                                {% if i >= variants_page.number|add:'-2' and i <= variants_page.number|add:'2' %}
+                                <li class="{% if i == variants_page.number %}active{% endif %}">
+                                    <a class="pagination-link{% if i != variants_page.number %} animate-hover-btn{% endif %}"
+                                    href="?{{ qs_keep }}{% if qs_keep %}&{% endif %}page={{ i }}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {# trailing ellipsis + Last #}
+                            {% if variants_page.number < variants_page.paginator.num_pages|add:'-2' %}
+                                <li><span class="pagination-link">…</span></li>
+                                <li>
+                                <a class="pagination-link animate-hover-btn"
+                                    href="?{{ qs_keep }}{% if qs_keep %}&{% endif %}page={{ variants_page.paginator.num_pages }}">
+                                    {{ variants_page.paginator.num_pages }}
+                                </a>
+                                </li>
+                            {% endif %}
+
+                            {# Next #}
+                            <li class="{% if not variants_page.has_next %}disabled{% endif %}">
+                                <a class="pagination-link animate-hover-btn"
+                                href="{% if variants_page.has_next %}?{{ qs_keep }}{% if qs_keep %}&{% endif %}page={{ variants_page.next_page_number }}{% else %}#{% endif %}">
+                                <span class="icon icon-arrow-right"></span>
+                                </a>
+                            </li>
+
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filter -->
+<div class="offcanvas offcanvas-start canvas-filter" id="filterShop">
+    <div class="canvas-wrapper">
+        <header class="canvas-header">
+            <div class="filter-icon">
+                <span class="icon icon-filter"></span>
+                <span>Filter</span>
+            </div>
+            <span class="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close"></span>
+        </header>
+        <div class="canvas-body">
+            <form method="get" class="facet-filter-form">
+                {# ===== PRICE ===== #}
+                <div class="widget-facet">
+                    <div class="facet-title" data-bs-target="#price" data-bs-toggle="collapse" aria-expanded="true" aria-controls="price">
+                    <span>Price</span>
+                    <span class="icon icon-arrow-up"></span>
+                    </div>
+                    <div id="price" class="collapse show">
+                    <div class="widget-price filter-price">
+                        <div class="price-val-range" id="price-value-range" data-min="0" data-max="500"></div>
+
+                        {# real inputs for backend #}
+                        <input type="hidden" name="min" id="price-min-input" value="{{ applied.min }}">
+                        <input type="hidden" name="max" id="price-max-input" value="{{ applied.max }}">
+
+                        <div class="box-title-price">
+                        <span class="title-price">Price :</span>
+                        <div class="caption-price">
+                            <div class="price-val" id="price-min-value" data-currency="₹">{% if applied.min %}₹{{ applied.min }}{% endif %}</div>
+                            <span>-</span>
+                            <div class="price-val" id="price-max-value" data-currency="₹">{% if applied.max %}₹{{ applied.max }}{% endif %}</div>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                {# ===== COLOR (dynamic) ===== #}
+                <div class="widget-facet">
+                    <div class="facet-title" data-bs-target="#color" data-bs-toggle="collapse" aria-expanded="true" aria-controls="color">
+                    <span>Color</span>
+                    <span class="icon icon-arrow-up"></span>
+                    </div>
+                    <div id="color" class="collapse show">
+                    <ul class="tf-filter-group filter-color current-scrollbar mb_36">
+                        {# Any / Clear option #}
+                        <li class="list-item d-flex gap-12 align-items-center">
+                        <input type="radio" name="color" class="tf-check-color" id="color-any" value=""
+                                {% if not applied.color %}checked{% endif %}>
+                        <label for="color-any" class="label"><span>Any</span></label>
+                        </li>
+
+                        {% for c in facets.colors %}
+                        {% with cid="color-"|add:forloop.counter|stringformat:"s" %}
+                        <li class="list-item d-flex gap-12 align-items-center">
+                            <input type="radio" name="color" class="tf-check-color"
+                                id="{{ cid }}" value="{{ c.value }}"
+                                {% if applied.color and applied.color|lower == c.value|lower %}checked{% endif %}>
+                            <label for="{{ cid }}" class="label">
+                            <span>{{ c.label }}</span>&nbsp;<span>({{ c.count }})</span>
+                            </label>
+                        </li>
+                        {% endwith %}
+                        {% empty %}
+                        <li class="list-item"><em>No colors</em></li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </div>
+
+                {# ===== SIZE (dynamic) ===== #}
+                <div class="widget-facet">
+                    <div class="facet-title" data-bs-target="#size" data-bs-toggle="collapse" aria-expanded="true" aria-controls="size">
+                    <span>Size</span>
+                    <span class="icon icon-arrow-up"></span>
+                    </div>
+                    <div id="size" class="collapse show">
+                    <ul class="tf-filter-group current-scrollbar">
+                        <li class="list-item d-flex gap-12 align-items-center">
+                        <input type="radio" name="size" class="tf-check tf-check-size" id="size-any" value=""
+                                {% if not applied.size %}checked{% endif %}>
+                        <label for="size-any" class="label"><span>Any</span></label>
+                        </li>
+
+                        {% for s in facets.sizes %}
+                        {% with sid="size-"|add:forloop.counter|stringformat:"s" %}
+                        <li class="list-item d-flex gap-12 align-items-center">
+                            <input type="radio" name="size" class="tf-check tf-check-size"
+                                id="{{ sid }}" value="{{ s.value }}"
+                                {% if applied.size and applied.size|lower == s.value|lower %}checked{% endif %}>
+                            <label for="{{ sid }}" class="label">
+                            <span>{{ s.label }}</span>&nbsp;<span>({{ s.count }})</span>
+                            </label>
+                        </li>
+                        {% endwith %}
+                        {% empty %}
+                        <li class="list-item"><em>No sizes</em></li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-10 mt_12">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a class="btn btn-line" href="?">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- End Filter -->
+{% else %}
+<div class="empty-state">No products found.</div>
+{% endif %}
+
+{% include "seo/ld_category_child.html" %}
+
+
+{% endblock %}
+
+{% block models %}
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}

@@ -1,0 +1,52 @@
+<div class="card mb_16" id="reviews-list"
+     data-slug="{{ product.slug }}" data-variant="{{ variant.id }}">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="fw-7 text_black m-0">All Reviews</h6>
+    <select class="form-select form-select-sm w-auto" id="reviews-sort">
+      <option value="recent" {% if sort == "recent" %}selected{% endif %}>Most Recent</option>
+      <option value="rating_high" {% if sort == "rating_high" %}selected{% endif %}>Highest Rated</option>
+      <option value="rating_low" {% if sort == "rating_low" %}selected{% endif %}>Lowest Rated</option>
+    </select>
+  </div>
+  <div class="card-body">
+    {% if reviews_page.object_list %}
+      {% for r in reviews_page.object_list %}
+        <div class="mb_16 pb_16 border-bottom">
+          <div class="d-flex align-items-center gap-8 mb_6">
+            <div class="fw-6">{{ r.user.get_full_name|default:r.user.email }}</div>
+            <div class="badge bg-success-subtle text-success fs-12">
+              {{ r.rating }} ★
+            </div>
+            {% if r.is_verified_purchase %}
+              <div class="badge bg-primary-subtle fs-12">Verified Purchase</div>
+            {% endif %}
+          </div>
+          {% if r.title %}<div class="fw-6 mb_6">{{ r.title }}</div>{% endif %}
+          {% if r.body %}<div class="text-muted fs-14">{{ r.body }}</div>{% endif %}
+          <div class="fs-12 text-muted mt_6">{{ r.created_at|date:"M d, Y" }}</div>
+        </div>
+      {% endfor %}
+
+      <nav class="mt-2 d-flex justify-content-between align-items-center">
+        <div class="fs-12 text-muted">
+          Page {{ reviews_page.number }} of {{ reviews_page.paginator.num_pages }}
+        </div>
+        <ul class="pagination pagination-sm m-0" id="reviews-pagination">
+          {% if reviews_page.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ reviews_page.previous_page_number }}">&laquo;</a></li>
+          {% endif %}
+          {% for i in reviews_page.paginator.page_range %}
+            <li class="page-item {% if i == reviews_page.number %}active{% endif %}">
+              <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+            </li>
+          {% endfor %}
+          {% if reviews_page.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ reviews_page.next_page_number }}">&raquo;</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% else %}
+      <div class="text-muted">No reviews yet for this variant.</div>
+    {% endif %}
+  </div>
+</div>

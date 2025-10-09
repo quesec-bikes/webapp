@@ -1,0 +1,67 @@
+{% load static %}
+<section class="flat-spacing-4 flat-categorie">
+    <div class="container-full">
+        <div class="flat-title-v2">
+            <div class="box-sw-navigation">
+                <div class="nav-sw nav-next-slider nav-next-collection"><span class="icon icon-arrow-left"></span></div>
+                <div class="nav-sw nav-prev-slider nav-prev-collection"><span class="icon icon-arrow-right"></span>
+                </div>
+            </div>
+            <span class="text-3 fw-7 text-uppercase title wow fadeInUp" data-wow-delay="0s">SHOP BY
+                CATEGORIES</span>
+        </div>
+        <div class="row">
+            <div class="col-xl-9 col-lg-8 col-md-8">
+                <div dir="ltr" class="swiper tf-sw-collection" data-preview="3" data-tablet="2" data-mobile="2"
+                    data-space-lg="30" data-space-md="30" data-space="15" data-loop="false" data-auto-play="false">
+                    <div class="swiper-wrapper">
+                        {% for c in menu_flat_categories %}
+                        <div class="swiper-slide" lazy="true">
+                            {% if c.parent_id %}
+                            <div class="collection-item style-left hover-img">
+                                <div class="collection-inner">
+                                    <a href="{% url 'shop:category_child' parent_slug=c.parent.slug child_slug=c.slug %}" class="collection-image img-style">
+                                        <img class="lazyload"
+                                            data-src="{{ c.image.url }}"
+                                            src="{{ c.image.url }}"
+                                            alt="{{ c.name }}">
+                                    </a>
+                                    <div class="collection-content">
+                                        <a href="{% url 'shop:category_child' parent_slug=c.parent.slug child_slug=c.slug %}"
+                                            class="tf-btn collection-title hover-icon fs-15"><span>{{ c.name }}</span><i
+                                                class="icon icon-arrow1-top-left"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="collection-item style-left hover-img">
+                                <div class="collection-inner">
+                                    <a href="{% url 'shop:category_parent' parent_slug=c.slug %}" class="collection-image img-style">
+                                        <img class="lazyload"
+                                            data-src="{{ c.image.url }}"
+                                            src="{{ c.image.url }}"
+                                            alt="{{ c.name }}">
+                                    </a>
+                                    <div class="collection-content">
+                                        <a href="{% url 'shop:category_parent' parent_slug=c.slug %}"
+                                            class="tf-btn collection-title hover-icon fs-15"><span>{{ c.name }}</span><i
+                                                class="icon icon-arrow1-top-left"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-md-4">
+                <div class="discovery-new-item">
+                    <h5>Discovery all new items</h5>
+                    <a href="/shop"><i class="icon-arrow1-top-left"></i></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

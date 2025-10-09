@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- page-403 -->
+<section class="page-404-wrap">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="image">
+                    <img src="{% static 'assets/images/item/403.svg' %}" alt="quesec">
+                </div>
+                <div class="title">
+                    Access Denied
+                </div>
+                <p>You don’t have permission to view this page. Go to our homepage to check out our latest collections.</p>
+                <a href="/" class="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn">Shop
+                    now</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /page-403 -->
+{% endblock %}

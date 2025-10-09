@@ -1,0 +1,93 @@
+{# ==========================================================
+  HOME PAGE SCHEMA — Quesec Rides
+  Combines:
+   1. Organization (brand info)
+   2. WebSite (search action)
+   3. ItemList (featured categories)
+  ========================================================== #}
+
+{% load static %}
+{% with host=request.scheme|add:"://"|add:request.get_host %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+
+    {# =======================================================
+       1) ORGANIZATION
+       ======================================================= #}
+    {
+      "@type": "Organization",
+      "name": "Quesec Rides",
+      "url": "{{ host }}/",
+      {% if branding.logo %}
+      "logo": "{{ host }}{{ branding.logo.url }}",
+      {% endif %}
+      {% if contact_block.phone or contact_block.email %}
+      "contactPoint": {
+        "@type": "ContactPoint",
+        {% if contact_block.phone %}
+        "telephone": "{{ contact_block.phone|escapejs }}",
+        {% endif %}
+        {% if contact_block.email %}
+        "email": "{{ contact_block.email|escapejs }}",
+        {% endif %}
+        "contactType": "customer support",
+        "areaServed": "IN"
+      },
+      {% endif %}
+      {% if social_links %}
+      "sameAs": [
+        {% for s in social_links %}
+          "{{ s.url }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
+      {% endif %}
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN"
+      }
+    },
+
+    {# =======================================================
+       2) WEBSITE
+       ======================================================= #}
+    {
+      "@type": "WebSite",
+      "name": "Quesec Rides",
+      "url": "{{ host }}/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ host }}/search/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+
+    {# =======================================================
+       3) ITEMLIST (FEATURED CATEGORIES)
+       ======================================================= #}
+    {
+      "@type": "ItemList",
+      "name": "Shop by Category",
+      "itemListOrder": "https://schema.org/ItemListOrderAscending",
+      "numberOfItems": {{ featured_categories|length }},
+      "itemListElement": [
+        {% for cat in featured_categories %}
+        {
+          "@type": "CollectionPage",
+          "position": {{ cat.display_order|default:forloop.counter }},
+          "name": "{{ cat.title|escapejs }}",
+          "url": "{{ host }}{{ cat.get_absolute_url }}",
+          {% if cat.image %}
+          "image": "{{ host }}{{ cat.image.url }}"
+          {% endif %}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+  ]
+}
+</script>
+
+{% endwith %}

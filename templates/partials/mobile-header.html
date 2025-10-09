@@ -1,0 +1,22 @@
+{% load static %}
+
+<div class="offcanvas offcanvas-start canvas-mb" id="mobileMenu">
+    <span class="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close"></span>
+    <div class="mb-canvas-content">
+        <div class="mb-body">
+            <ul class="nav-ul-mb" id="wrapper-menu-navigation">
+                {% for item in primary_menu %}
+                <li class="nav-mb-item">
+                    <a href="{{ item.url }}"
+                        class="mb-menu-link" {% if item.new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="mb-other-content">
+                <div class="d-flex group-icon">
+                    <a href="{% if request.user.is_authenticated %}#{% else %}{% url 'accounts:login' %}{% endif %}" class="site-nav-icon"><i class="icon icon-account"></i>{% if request.user.is_authenticated %}My account{% else %}Login{% endif %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

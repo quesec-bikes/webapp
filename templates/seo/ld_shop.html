@@ -1,0 +1,15 @@
+{# SHOP page schema: CollectionPage + BreadcrumbList + ItemList (visible categories only) #}
+{% with host=request.scheme|add:"://"|add:request.get_host %}
+
+{# choose the list that is actually shown on the page #}
+{% if child_cats %}
+  {% with cats=child_cats %}
+    {% include "seo/ld_shop__block.html" %}
+  {% endwith %}
+{% elif parent_cats %}
+  {% with cats=parent_cats %}
+    {% include "seo/ld_shop__block.html" %}
+  {% endwith %}
+{% endif %}
+
+{% endwith %}

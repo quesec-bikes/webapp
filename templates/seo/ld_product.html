@@ -1,0 +1,99 @@
+{% with all_variants=variants|default:product.variants.all %}
+{% with host=request.scheme|add:"://"|add:request.get_host %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProductGroup",
+  "@id": "{{ host }}{{ request.path }}#product-group",
+  "name": "{{ product.title|escapejs }}",
+  "description": "{{ product.short_description|default_if_none:''|striptags|truncatechars:300|escapejs }}",
+  {% if product.category %}
+  "category": "{{ product.category.get_full_path_display|default:product.category.name|escapejs }}",
+  {% endif %}
+  "brand": { "@type": "Brand", "name": "Quesec" },
+  {% if rating_count > 0 %}
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ group_avg_rating|floatformat:1 }}",
+    "reviewCount": "{{ group_rating_count }}",
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  {% endif %}
+  {% if product_top_reviews %}
+  "review": [
+    {% for r in product_top_reviews %}
+    {
+      "@type": "Review",
+      "author": { "@type": "Person", "name": "{{ r.author_name|default:'Customer'|escapejs }}" },
+      "datePublished": "{{ r.created_at|date:'Y-m-d' }}",
+      "reviewBody": "{{ r.body|striptags|truncatechars:350|escapejs }}",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "{{ r.rating }}",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  {% endif %}
+
+  "hasVariant": [
+    {% for v in all_variants %}
+      {% with ci=v.card_info %}
+      {
+        "@type": "Product",
+        "@id": "{{ host }}{{ ci.link }}#{{ v.sku|default:'variant'|escapejs }}",
+        "name": "{{ ci.title|escapejs }}",
+        "sku": "{{ v.sku|default:''|escapejs }}",
+        {% if v.gtin|default:'' %}"gtin13": "{{ v.gtin|escapejs }}",{% endif %}
+        "image": [ "{{ host }}{{ ci.img }}" ],
+        "url": "{{ host }}{{ ci.link }}",
+        "isVariantOf": { "@type": "ProductGroup", "@id": "{{ host }}{{ request.path }}#product-group" },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "INR",
+          "price": "{{ ci.price }}",
+          "availability": "{% if v.stock_qty|default:0|add:0 >= 1 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+          {% if v.promo_price and v.promo_start and v.promo_end and v.promo_price < v.sale_price and v.promo_start <= now and now < v.promo_end %}
+          "priceValidUntil": "{{ v.promo_end|date:'Y-m-d' }}",
+          {% endif %}
+          "itemCondition": "https://schema.org/NewCondition",
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingDestination": { "@type": "DefinedRegion", "name": "India" },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": { "@type": "QuantitativeValue", "minValue": 0, "maxValue": 0, "unitCode": "d" },
+              "transitTime": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 5, "unitCode": "d" }
+            },
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": "{{ v.delivery_price|default:0 }}",
+              "currency": "INR"
+            }{% if v.delivery_price|default:0 == 0 %},
+            "shippingLabel": "Free Delivery Across India"
+            {% else %},
+            "shippingLabel": "Standard Delivery (4–5 Days)"
+            {% endif %}
+          }
+          {% if ci.mrp %}
+          , "priceSpecification": [
+            { "@type": "UnitPriceSpecification", "price": "{{ ci.mrp }}", "priceCurrency": "INR", "priceType": "https://schema.org/ListPrice" }
+            {% if v.promo_price and v.promo_start and v.promo_end and v.promo_price < v.sale_price and v.promo_start <= now and now < v.promo_end %},
+            { "@type": "UnitPriceSpecification", "price": "{{ ci.price }}", "priceCurrency": "INR", "priceType": "https://schema.org/SalePrice", "validFrom": "{{ v.promo_start|date:'Y-m-d' }}", "validThrough": "{{ v.promo_end|date:'Y-m-d' }}" }
+            {% endif %}
+          ]
+          {% endif %}
+        }
+      }{% if not forloop.last %},{% endif %}
+      {% endwith %}
+    {% endfor %}
+  ]
+}
+</script>
+
+{% endwith %}
+{% endwith %}

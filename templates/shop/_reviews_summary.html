@@ -1,0 +1,34 @@
+<div class="card card-summary mb_16" id="reviews-summary">
+  <div class="card-header">
+    <h6 class="fw-7 text_black">Customer Reviews</h6>
+  </div>
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-12">
+      <div class="fs-32 fw-7">{{ avg_rating|floatformat:1 }}/5</div>
+      <div class="fs-14 text-muted">Based on {{ rating_count }} review{{ rating_count|pluralize }}</div>
+    </div>
+
+    <div class="mt-12">
+      {% for star in "54321" %}
+        {% with s=star|add:"0"|int %}
+        <div class="d-flex align-items-center gap-8">
+          <div class="w-40">{{ s }} ★</div>
+          <div class="flex-grow-1 progress w-100" style="height:6px;">
+            {% with total=rating_count count=histogram.s %}
+              {% if total > 0 %}
+                {% with pct=count|divisibleby:total %}
+                {% endwith %}
+              {% endif %}
+            {% endwith %}
+            {% with pct=histogram.s|floatformat:0 %}
+            <div class="progress-bar" role="progressbar"
+                 style="width: {% if rating_count %}{{ histogram.s|mul:100|div:rating_count }}%{% else %}0%{% endif %};"></div>
+            {% endwith %}
+          </div>
+          <div class="w-40 text-end">{{ histogram.s }}</div>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  </div>
+</div>

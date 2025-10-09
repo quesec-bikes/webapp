@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- page-title -->
+<div class="tf-page-title">
+    <div class="container-full">
+        <div class="heading text-center">Payment confirmed</div>
+    </div>
+</div>
+<!-- /page-title -->
+
+<!-- page-content -->
+<section class="flat-spacing-11">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <h5 class="fw-5 mb_20">Thank you! 🎉</h5>
+                <div class="tf-page-cart-checkout">
+                    <div class="d-flex align-items-center justify-content-between mb_15">
+                        <div class="fs-18">Order Number</div>
+                        <p>{{ order.order_number }}</p>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb_15">
+                        <div class="fs-18">Status</div>
+                        <p>{{ order.get_status_display }}</p>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb_24">
+                        <div class="fs-22 fw-6">Payable</div>
+                        <span class="total-value">>₹{{ order.grand_total|floatformat:-2|divisibleby:100 }}</span>
+                    </div>
+                    <div class="d-flex gap-10">
+                        <a href="/" class="tf-btn w-100 btn-outline animate-hover-btn rounded-0 justify-content-center">
+                            <span>Continue shopping</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- page-content -->
+{% endblock %}
+
+{% block models %}
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}

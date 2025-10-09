@@ -1,0 +1,14 @@
+{% load static %}
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Redirecting to PayU…</title></head>
+<body>
+  <p>Redirecting to PayU, please wait…</p>
+  <form action="{{ payu_url }}" method="post" id="payuForm">
+    {% for k, v in payload.items %}
+      <input type="hidden" name="{{ k }}" value="{{ v|escape }}">
+    {% endfor %}
+  </form>
+  <script>document.getElementById('payuForm').submit();</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{# PARENT CATEGORY page: CollectionPage + BreadcrumbList + ItemList (sub-categories) #}
+{% with host=request.scheme|add:"://"|add:request.get_host %}
+{% with subs=subcategories %}
+
+{% if category %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+
+    {
+      "@type": "CollectionPage",
+      "@id": "{{ host }}{{ request.path }}#collection",
+      "name": "{{ category.name|addslashes|safe }}",
+      "url": "{{ host }}{{ request.path }}"
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ host }}/" },
+        { "@type": "ListItem", "position": 2, "name": "{{ category.name|addslashes|safe }}", "item": "{{ host }}{{ request.path }}" }
+      ]
+    },
+
+    {% if subs %}
+    {
+      "@type": "ItemList",
+      "name": "Sub-categories",
+      "itemListOrder": "https://schema.org/ItemListOrderAscending",
+      "numberOfItems": {{ subs|length }},
+      "itemListElement": [
+        {% for c in subs %}
+        {
+          "@type": "CollectionPage",
+          "position": {{ c.display_order|default:forloop.counter }},
+          "name": "{{ c.name|escapejs }}",
+          "url": "{{ host }}{{ c.get_absolute_url }}"{% if c.image %},
+          "image": "{{ host }}{{ c.image.url }}"{% endif %}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    {% endif %}
+  ]
+}
+</script>
+{% endif %}
+
+{% endwith %}
+{% endwith %}

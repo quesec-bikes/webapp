@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  {% if change and original.pk %}
+    <li>
+      <a class="historylink" href="{% url 'admin:shop_variant_duplicate' original.pk %}">
+        Duplicate
+      </a>
+    </li>
+  {% endif %}
+{% endblock %}

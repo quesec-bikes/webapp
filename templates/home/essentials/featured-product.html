@@ -1,0 +1,120 @@
+{% load static %}
+<section class="flat-spacing-5 pt_0">
+  <div class="container">
+    <div class="flat-animate-tab">
+      <div class="flat-title flat-title-tab flex-row justify-content-between px-0">
+        <span class="title text-nowrap fw-6 wow fadeInUp" data-wow-delay="0s">Featured products</span>
+
+        <ul class="widget-tab-5" role="tablist">
+          {% for tab in featured_tabs %}
+            <li class="nav-tab-item" role="presentation">
+              <a href="#fp-{{ tab.slug }}" class="{% if forloop.first %}active{% endif %}" data-bs-toggle="tab">
+                {{ tab.name }}
+              </a>
+            </li>
+          {% endfor %}
+          {% if featured_tabs %}
+            <li class="nav-tab-item">
+              <a href="/shop" class="d-flex align-items-center gap-10">
+                Shop all
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M1.07692 10L0 8.92308L7.38462 1.53846H0.769231V0H10V9.23077H8.46154V2.61538L1.07692 10Z" fill="currentColor"></path>
+                </svg>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="tab-content">
+        {% for tab in featured_tabs %}
+          <div class="tab-pane {% if forloop.first %}active show{% endif %}" id="fp-{{ tab.slug }}" role="tabpanel">
+            <div dir="ltr"
+                 class="swiper tf-sw-product-sell"
+                 data-preview="3" data-tablet="3" data-mobile="1"
+                 data-space-lg="30" data-space-md="15"
+                 data-pagination="1" data-pagination-md="3" data-pagination-lg="3">
+              <div class="swiper-wrapper">
+
+                {% for v in tab.variants %}
+                  {% with p=v.product c=p.category %}
+                  <div class="swiper-slide" lazy="true">
+                    <div class="blog-article-item wow fadeInUp" data-wow-delay="0s">
+                      <div class="article-thumb">
+                        {% if c.parent %}
+                            {% url 'shop:product_detail_child' parent_slug=c.parent.slug child_slug=c.slug slug=p.slug as purl %}
+                        {% else %}
+                            {% url 'shop:product_detail_parent' parent_slug=c.slug slug=p.slug as purl %}
+                        {% endif %}
+                        <a href="{{ purl }}?variant={{ v.id }}">
+                          {# Try variant image -> product image fallback #}
+                          {% with vimg=v.images.all.0.image.url pimg=p.images.all.0.image.url %}
+                            <img class="lazyload"
+                                 data-src="{{ vimg|default:pimg }}"
+                                 src="{{ vimg|default:pimg }}"
+                                 alt="{{ p.title }}">
+                          {% endwith %}
+                        </a>
+                        <div class="article-label">
+                            {% with cat=tab.cat %}
+                                {% if cat.parent %}
+                                    {% url 'shop:category_child' parent_slug=cat.parent.slug child_slug=cat.slug as caturl %}
+                                {% else %}
+                                    {% url 'shop:category_parent' parent_slug=cat.slug as caturl %}
+                                {% endif %}
+                                <a href="{{ caturl }}" class="animate-hover-btn btn-icon btn-sm radius-3 tf-btn text-capitalize">
+                                    {{ tab.name }}
+                                </a>
+                            {% endwith %}
+                        </div>
+                      </div>
+
+                      <div class="article-content">
+                        <div class="article-title font-sora">
+                          <a href="{{ purl }}?variant={{ v.id }}" class="">
+                            {# Title: Color + Product + (Size) #}
+                            {% with color=v.color_label|default:"" size=v.size.name|default_if_none:"" %}
+                              {{ color }} {{ p.title }}{% if size %} - {{ size }}{% endif %}
+                            {% endwith %}
+                          </a>
+
+                          <div class="mt-1">
+                            <div class="card-price">
+                                {# Price = variant effective price precedence: promo -> sale -> price #}
+                                {% with mrp=v.mrp price=v.effective_price %}
+                                    {% if mrp and price and price < mrp %}
+                                        <span class="old">₹{{ mrp }}</span>
+                                        <span class="new">₹{{ price }}</span>
+                                    {% elif price %}
+                                        <span class="new">₹{{ price }}</span>
+                                    {% elif mrp %}
+                                        <span class="new">₹{{ mrp }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endwith %}
+                {% empty %}
+                  <div class="swiper-slide">
+                    <div class="blog-article-item">
+                      <div class="article-content">
+                        <div class="article-title font-sora">No featured items</div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+              </div>
+              <div class="sw-dots style-2 sw-pagination-product justify-content-center"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- page-title -->
+<div class="tf-page-title">
+    <div class="container-full">
+    <div class="heading text-center">Address</div>
+    </div>
+</div>
+<!-- /page-title -->
+
+<!-- page-content -->
+<section class="flat-spacing-11">
+    <div class="container">
+        <div class="tf-page-cart-wrap layout-2">
+            <div class="tf-page-cart-item">
+                <h5 class="fw-5 mb_20">Billing & Shipping details</h5>
+                <form method="post" class="form-checkout">
+                    {% csrf_token %}
+
+                    <div class="box grid-2">
+                        <fieldset class="fieldset">
+                            <label for="id_mobile">Phone Number</label>
+                            {{ form.mobile }}
+                            {% if form.mobile.errors %}<div class="error">{{ form.mobile.errors|striptags }}</div>{% endif %}
+                        </fieldset>
+                        <fieldset class="fieldset">
+                            <label for="id_email">Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="error">{{ form.email.errors|striptags }}</div>{% endif %}
+                        </fieldset>
+                    </div>
+
+                    <fieldset class="box fieldset">
+                    <label for="id_full_name">Full Name</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<div class="error">{{ form.full_name.errors|striptags }}</div>{% endif %}
+                    </fieldset>
+
+                    <fieldset class="box fieldset">
+                    <label for="id_full_address">Full Address</label>
+                    {{ form.full_address }}
+                    {% if form.full_address.errors %}<div class="error">{{ form.full_address.errors|striptags }}</div>
+                    {% endif %}
+                    </fieldset>
+
+                    <fieldset class="box fieldset">
+                    <label for="id_pincode">Pincode</label>
+                    {{ form.pincode }}
+                    {% if form.pincode.errors %}<div class="error">{{ form.pincode.errors|striptags }}</div>{% endif %}
+                    </fieldset>
+
+                    <div class="box grid-2">
+                    <fieldset class="fieldset">
+                        <label for="id_city">City</label>
+                        {{ form.city }}
+                    </fieldset>
+                    <fieldset class="fieldset">
+                        <label for="id_state">State</label>
+                        {{ form.state }}
+                    </fieldset>
+                    </div>
+
+                    <fieldset class="box fieldset">
+                    <label for="id_gst">GST (optional)</label>
+                    {{ form.gst }}
+                    {% if form.gst.errors %}
+                        <div class="text-danger fs-12 mt-1">{{ form.gst.errors.0 }}</div>
+                    {% endif %}
+                    </fieldset>
+
+                    <button type="submit" class="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center">
+                    Save & Continue
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- page-content -->
+
+<style>
+    /* Checkout page specific centering */
+    .tf-page-cart-wrap {
+    display: flex;
+    justify-content: center;
+    /* horizontally center */
+    }
+
+    .tf-page-cart-item {
+    max-width: 600px;
+    /* form ko readable width do */
+    width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block js %}
+{{ cw_cart_items|json_script:"cw_cart_items_json" }}
+<script>
+    // Expose snapshot to CartWatch capture JS
+    window.__CART_ITEMS__ = JSON.parse(document.getElementById('cw_cart_items_json').textContent || "[]");
+    window.__CART_TOTAL__ = {{ cw_cart_total|default:0 }};
+</script>
+<script>
+(function () {
+    const pincodeEl = document.getElementById("id_pincode");
+    const cityEl = document.getElementById("id_city");
+    const stateEl = document.getElementById("id_state");
+
+    function autoFillCityState(pin) {
+    if (!pin || String(pin).length !== 6) return;
+    fetch(`/cart/api/pincode/?pincode=${encodeURIComponent(pin)}`, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(r => r.json())
+        .then(j => {
+        if (j && j.ok) {
+            if (j.city && !cityEl.value) cityEl.value = j.city;
+            if (j.state && !stateEl.value) stateEl.value = j.state;
+        }
+        })
+        .catch(() => { /* silent fail; manual entry allowed */ });
+    }
+
+    if (pincodeEl) {
+    pincodeEl.addEventListener("change", e => autoFillCityState(e.target.value.trim()));
+    pincodeEl.addEventListener("blur", e => autoFillCityState(e.target.value.trim()));
+    // If prefilled pincode present, try once
+    if (pincodeEl.value && (!cityEl.value || !stateEl.value)) {
+        autoFillCityState(pincodeEl.value.trim());
+    }
+    }
+})();
+</script>
+<script>
+(function () {
+    // Helper: CSRF
+    function readCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+    }
+    function getCsrf() {
+    return readCookie('csrftoken') || (document.querySelector('input[name=csrfmiddlewaretoken]') || {}).value || '';
+    }
+    function debounce(fn, wait) {
+    let t; return function (...args) {
+        clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait);
+    };
+    }
+    function normalizePhone(p) {
+    return (p || '').replace(/\D+/g, '').replace(/^91(\d{10})$/, '$1').replace(/^0(\d{10})$/, '$1');
+    }
+    function isValid10(p) {
+    return /^\d{10}$/.test(p) && /^[6-9]/.test(p[0]);
+    }
+
+    // Locate phone input on checkout
+    const phoneInput = document.querySelector('#id_mobile, input[name="mobile"], input[name="phone"]');
+    if (!phoneInput) return;
+
+    const postLead = debounce(async function () {
+    const raw = phoneInput.value || '';
+    const phone = normalizePhone(raw);
+    if (!isValid10(phone)) return;
+
+    // Build a minimal snapshot from page (customize as per your cart data)
+    // Example snapshot shape:
+    const items = Array.isArray(window.__CART_ITEMS__) ? window.__CART_ITEMS__ : [];
+    const cartSnapshot = window.__CART_SNAPSHOT__ || {
+        items, // keep full objects
+        total: window.__CART_TOTAL__ || 0
+    };
+
+    const form = new FormData();
+    form.append('phone', phone);
+    form.append('cart_snapshot', JSON.stringify(cartSnapshot));
+    form.append('source_url', window.location.href);
+
+    try {
+        const res = await fetch('/cartwatch/capture/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrf() },
+        body: form
+        });
+        // Optional: debug
+        // const data = await res.json(); console.log('CartWatch:', data);
+    } catch (e) {
+        // swallow
+    }
+    }, 600);
+
+    phoneInput.addEventListener('input', postLead);
+})();
+</script>
+{% endblock %}

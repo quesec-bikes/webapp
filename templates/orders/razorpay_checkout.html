@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Processing Payment…</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html,body{height:100%;margin:0}
+    .wrap{display:flex;align-items:center;justify-content:center;height:100%;font-family:system-ui,sans-serif}
+    .muted{opacity:.6;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="muted">Opening secure payment…</div>
+    </div>
+  </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+  (function () {
+    // options object server se aata hai (services.py se)
+    const opts = {{ rzp_options|safe }};
+
+    // ✅ Reliable callback URL (Django reverser)
+    const callbackEndpoint = "{% url 'orders:razorpay_callback' %}";
+
+    // Success handler: POST 3 fields to server, then server redirects to success
+    opts.handler = function (resp) {
+      // resp => { razorpay_payment_id, razorpay_order_id, razorpay_signature }
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = callbackEndpoint;
+
+      // View is @csrf_exempt; agar aap exempt hatate ho to yaha CSRF token add karna hoga:
+      // const token = "{{ csrf_token }}"; addHidden('csrfmiddlewaretoken', token);
+
+      function addHidden(name, value) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = name;
+        inp.value = value || '';
+        form.appendChild(inp);
+      }
+
+      addHidden('razorpay_payment_id', resp.razorpay_payment_id);
+      addHidden('razorpay_order_id',  resp.razorpay_order_id);
+      addHidden('razorpay_signature', resp.razorpay_signature);
+
+      // (Optional) Order number/attempt id agar pass karna ho:
+      // addHidden('order_number', '{{ order_number|default:"" }}');
+
+      document.body.appendChild(form);
+      form.submit();  // 👉 server pe verify + redirect to orders:success
+    };
+
+    // Popup close par failed pe bhejna (already present logic keep as-is)
+    opts.modal = opts.modal || {};
+    opts.modal.ondismiss = function () {
+      var orderNo = (opts.notes && opts.notes.order_number) || '';
+      if (orderNo) {
+        window.location.href = "{% url 'orders:failed' 'ORDERNO' %}".replace('ORDERNO', orderNo);
+      } else {
+        window.history.back();
+      }
+    };
+
+    // Auto-open the popup
+    const rzp = new Razorpay(opts);
+    rzp.open();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- page-500 -->
+<section class="page-404-wrap">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="image">
+                    <img src="{% static 'assets/images/item/500.svg' %}" alt="quesec">
+                </div>
+                <div class="title">
+                    Server Error
+                </div>
+                <p>Something went wrong on our end. Please try again later.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /page-500 -->
+{% endblock %}

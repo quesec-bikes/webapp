@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- page-title -->
+<div class="tf-page-title style-2">
+  <div class="container-full">
+    <div class="heading text-center">Search results for “{{ q }}”</div>
+  </div>
+</div>
+<!-- /page-title -->
+
+<!-- page-content -->
+<div class="flat-spacing-8 page-search-inner">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="tf-search-content-title">
+          {{ total }} product{{ total|pluralize }} found
+        </div>
+      </div>
+      {% if total == 0 %}
+      <div class="col-12">
+        <div class="alert alert-light">No matches found. Try different keywords.</div>
+      </div>
+      {% else %}
+      {% for p in items %}
+      <div class="col-lg-4 col-md-6 col-12 mb-4">
+        <div class="blog-article-item">
+          <div class="article-thumb">
+            <a href="{{ p.url }}">
+              {% if p.thumb %}
+              <img src="{{ p.thumb }}" alt="{{ p.title }}">
+              {% endif %}
+            </a>
+            <div class="article-label">
+              <a href="blog-detail.html" class="btn-sm tf-btn">ACCESSORIES</a>
+            </div>
+          </div>
+          <div class="article-content">
+            <div class="article-title font-sora">
+              <a href="{{ p.url }}">{{ p.title }}</a>
+              <div>
+              {% with price=p.price mrp=p.mrp %}
+              {% if mrp and price and price < mrp %} <span class="price">
+              <span class="old-price text_primary">₹{{ mrp|floatformat:0 }}</span>
+              <span class="new-price">₹{{ price|floatformat:0 }}</span>
+              </span>
+              {% elif price %}
+              <span class="price">₹{{ price|floatformat:0 }}</span>
+              {% else %}
+              <span class="price">₹{{ p.mrp|default_if_none:"" }}</span>
+              {% endif %}
+              {% endwith %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% if more %}
+      <!-- Load Item -->
+      <div class="wd-load d-flex justify-content-center">
+        <button type="button"
+          onclick="window.location.href='{% url 'shop:search_results' %}?q={{ q|urlencode }}&page={{ next_page }}'"
+          class="tf-btn-loading tf-loading-default tf-loading animate-hover-btn"><span class="text">Load
+            more</span></button>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+<!-- /page-content -->
+
+
+
+{% endblock %}
+
+{% block models %}
+<!-- toolbar-bottom -->
+{% include 'partials/mobile-bottombar.html' %}
+<!-- /toolbar-bottom -->
+{% endblock %}

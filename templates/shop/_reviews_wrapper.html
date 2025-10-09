@@ -1,0 +1,172 @@
+{# uses your theme classes exactly, wired to our dynamic data #}
+<div class="tab-reviews write-cancel-review-wrap">
+
+  <div class="tab-reviews-heading">
+    <div class="top">
+      <!-- LEFT: Average + Stars + Count -->
+      <div class="text-center">
+        <h1 class="number fw-6">{{ avg_rating|floatformat:1 }}</h1>
+
+        <div class="list-star">
+  {% for i in "12345" %}
+    {% if forloop.counter <= avg_rating_int %}
+      <i class="icon icon-star"></i>
+    {% else %}
+      <i class="icon icon-star disable"></i>
+    {% endif %}
+  {% endfor %}
+</div>
+
+        <p>({{ rating_count }} Ratings)</p>
+      </div>
+
+      <!-- RIGHT: Histogram -->
+      <div class="rating-score">
+        {# we prepared hist_rows=[{star,count,pct}, ... 5..1] #}
+        {% for row in hist_rows %}
+          <div class="item">
+            <div class="number-1 text-caption-1">{{ row.star }}</div>
+            <i class="icon icon-star"></i>
+            <div class="line-bg">
+              <div style="width: {{ row.pct }}%;"></div>
+            </div>
+            <div class="number-2 text-caption-1">{{ row.count }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Write/Cancel buttons (theme classes) -->
+    <div>
+      {% if can_review %}
+        <div class="tf-btn btn-outline-dark fw-6 btn-comment-review btn-cancel-review" style="display:none;">Cancel Review</div>
+        <div class="tf-btn btn-outline-dark fw-6 btn-comment-review btn-write-review">Write a review</div>
+      {% else %}
+        <div class="text-muted fs-14">You can review only if you purchased this variant.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- COMMENTS LIST -->
+  <div class="reply-comment cancel-review-wrap">
+    <div class="d-flex mb_24 gap-20 align-items-center justify-content-between flex-wrap">
+      <h5 class="">{{ reviews_page.paginator.count|default:0 }} Comments</h5>
+    </div>
+
+    <div class="reply-comment-wrap">
+      {% for r in reviews_page %}
+        <div class="reply-comment-item">
+          <div class="user">
+            <div>
+              <h6>
+                <a class="link">{{ r.title|default:r.user.get_full_name|default:r.user.email }}</a>
+              </h6>
+              <div class="day text_black-2">{{ r.created_at|date:"M d, Y" }}</div>
+            </div>
+          </div>
+          <p class="text_black-2 d-flex align-items-center gap-8">
+            <span class="badge bg-success-subtle text-success">{{ r.rating }}★</span>
+            <span class="mx-1">–</span>
+            <span class="fw-6">
+              {{ r.user.get_full_name|default:r.user.email }}
+            </span>
+            {% if r.is_verified_purchase %}
+              <span class="badge bg-primary-subtle ms-2">VERIFIED PURCHASE</span>
+            {% endif %}
+          </p>
+          {% if r.body %}
+            <p class="text_black-2">{{ r.body|linebreaksbr }}</p>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="text-muted">No reviews yet.</p>
+      {% endfor %}
+    </div>
+
+    {% if reviews_page.has_other_pages %}
+      <div class="tf-pagination-wrap mt_12">
+        <ul class="tf-pagination-list" id="reviews-pagination">
+          {% if reviews_page.has_previous %}
+            <li><a class="pagination-link" href="?page={{ reviews_page.previous_page_number }}">«</a></li>
+          {% endif %}
+          {% for i in reviews_page.paginator.page_range %}
+            <li class="{% if i == reviews_page.number %}active{% endif %}">
+              <a class="pagination-link" href="?page={{ i }}">{{ i }}</a>
+            </li>
+          {% endfor %}
+          {% if reviews_page.has_next %}
+            <li><a class="pagination-link" href="?page={{ reviews_page.next_page_number }}">»</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if can_review %}
+  <!-- WRITE REVIEW FORM (theme markup, hooked to our backend names) -->
+  <form class="form-write-review write-review-wrap" id="review-form" method="post" action="{% url 'shop:review_create' %}" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="product" value="{{ product.id }}">
+    <input type="hidden" name="variant" value="{{ variant.id }}">
+
+    <div class="heading">
+      <h5>Write a review:</h5>
+      <div class="list-rating-check">
+        <input type="radio" id="star5" name="rating" value="5" />
+        <label for="star5" title="5 stars"></label>
+        <input type="radio" id="star4" name="rating" value="4" />
+        <label for="star4" title="4 stars"></label>
+        <input type="radio" id="star3" name="rating" value="3" />
+        <label for="star3" title="3 stars"></label>
+        <input type="radio" id="star2" name="rating" value="2" />
+        <label for="star2" title="2 stars"></label>
+        <input type="radio" id="star1" name="rating" value="1" />
+        <label for="star1" title="1 star"></label>
+      </div>
+    </div>
+
+    <div class="form-content">
+      <fieldset class="box-field">
+        <label class="label">Review Title</label>
+        <input type="text" placeholder="Give your review a title" name="title" maxlength="140">
+      </fieldset>
+      <fieldset class="box-field">
+        <label class="label">Review</label>
+        <textarea rows="4" placeholder="Write your comment here" name="body"></textarea>
+      </fieldset>
+    </div>
+
+    <div class="button-submit">
+      <button class="tf-btn btn-fill animate-hover-btn" type="submit">Submit Reviews</button>
+    </div>
+
+    <div id="review-form-msg" class="fs-12 mt_8 text-danger" style="display:none;">Error</div>
+  </form>
+  {% endif %}
+</div>
+
+{# Tiny toggler to match theme buttons (no styling change) #}
+<script>
+  (function(){
+    const wrap = document.currentScript.closest('.tab-reviews');
+    const btnWrite = wrap.querySelector('.btn-write-review');
+    const btnCancel = wrap.querySelector('.btn-cancel-review');
+    const listWrap = wrap.querySelector('.cancel-review-wrap');    // comments
+    const formWrap = wrap.querySelector('.write-review-wrap');     // form
+
+    if (btnWrite && btnCancel && formWrap && listWrap) {
+      btnWrite.addEventListener('click', function(){
+        formWrap.style.display = '';
+        listWrap.style.display = 'none';
+        btnWrite.style.display = 'none';
+        btnCancel.style.display = '';
+      });
+      btnCancel.addEventListener('click', function(){
+        formWrap.style.display = 'none';
+        listWrap.style.display = '';
+        btnWrite.style.display = '';
+        btnCancel.style.display = 'none';
+      });
+    }
+  })();
+</script>

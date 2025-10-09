@@ -1,0 +1,68 @@
+{% load static %}
+{% if deal_cards %}
+<section class="flat-spacing-8">
+    <div class="container">
+        <div class="flat-title flex-row justify-content-center px-0">
+            <span class="title fw-6 wow fadeInUp" data-wow-delay="0s">Deals Of The Day</span>
+        </div>
+        <div dir="ltr" class="swiper tf-sw-product-sell" data-preview="3" data-tablet="3" data-mobile="1"
+            data-space-lg="30" data-space-md="15" data-pagination="1" data-pagination-md="3" data-pagination-lg="3">
+            <div class="swiper-wrapper">
+                {% for card in deal_cards %}
+                {% with v=card.variant p=card.progress %}
+                
+                <div class="swiper-slide" lazy="true">
+                    <div class="card-product style-8 border-0 bg_grey-14 lg">
+                        <div class="card-product-wrapper">
+                            <a href="{{ card.href }}" class="product-img">
+                                <img class="lazyload img-product"
+                                    data-src="{{ card.thumb }}"
+                                    src="{{ card.thumb }}" alt="{{ card.title }}">
+                                <img class="lazyload img-hover"
+                                    data-src="{{ card.thumb }}"
+                                    src="{{ card.thumb }}" alt="{{ card.title }}">
+                            </a>
+                            <div class="on-sale-wrap text-end">
+                                <div class="on-sale-item">-{{ card.discount_pct }}%</div>
+                            </div>
+                        </div>
+                        <div class="card-product-info">
+                            <a href="{{ card.href }}" class="title link fw-6">{{ card.title }}</a>
+                            <span class="price"><span class="old-price text_primary">₹{{ card.mrp }}</span> <span
+                                    class="new-price">₹{{ card.promo_price }}</span></span>
+                            <div class="pr-stock">
+                                <div class="pr-stock-status d-flex justify-content-between align-items-center">
+                                    <div class="pr-stock-available">
+                                        <span class="pr-stock-label fs-12 fw-6">Available: </span>
+                                        <span class="pr-stock-value fs-12 fw-6">{{ p.shown_available }} </span>
+                                    </div>
+                                    <div class="pr-stock-sold">
+                                        <span class="pr-stock-label fs-12 fw-6">Sold: </span>
+                                        <span class="pr-stock-value fs-12 fw-6">{{ p.shown_claimed }} </span>
+                                    </div>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ p.shown_available }}%" aria-valuenow="{{ p.shown_available }}"
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="count-down">
+                                <div class="tf-countdown-v2">
+                                    <div class="js-countdown"
+                                        data-timer="{{ p.seconds_left }}"
+                                        data-labels="Days,Hours,Mins,Secs">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            <div class="sw-dots style-2 sw-pagination-product justify-content-center"></div>
+        </div>
+    </div>
+</section>
+{% endif %}

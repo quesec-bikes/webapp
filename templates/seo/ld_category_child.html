@@ -1,0 +1,61 @@
+{# CHILD CATEGORY page: CollectionPage + BreadcrumbList + ItemList (products) #}
+{% with host=request.scheme|add:"://"|add:request.get_host %}
+{% with cards=variants_page.object_list %}
+
+{% if category %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+
+    {
+      "@type": "CollectionPage",
+      "@id": "{{ host }}{{ request.path }}#collection",
+      "name": "{{ category.name|addslashes|safe }}",
+      "url": "{{ host }}{{ request.path }}"
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ host }}/" },
+        { "@type": "ListItem", "position": 2, "name": "{{ category.parent.name|escapejs }}", "item": "{{ host }}{{ category.parent.get_absolute_url }}" },
+        { "@type": "ListItem", "position": 3, "name": "{{ category.name|addslashes|safe }}", "item": "{{ host }}{{ request.path }}" }
+      ]
+    },
+
+    {% if cards %}
+    {
+      "@type": "ItemList",
+      "name": "Products",
+      "itemListOrder": "https://schema.org/ItemListOrderAscending",
+      "numberOfItems": {{ cards|length }},
+      "itemListElement": [
+        {% for v in cards %}
+          {% with ci=v.card_info %}
+          {
+            "@type": "Product",
+            "position": {{ forloop.counter }},
+            "name": "{{ ci.title|addslashes|safe }}",
+            "image": [ "{{ host }}{{ ci.img }}" ],
+            "url": "{{ host }}{{ ci.link }}",
+            {% if v.sku %}"sku": "{{ v.sku|escapejs }}",{% endif %}
+            "offers": {
+              "@type": "Offer",
+              "price": "{{ ci.price }}",
+              "priceCurrency": "INR",
+              "availability": "{% if v.stock_qty|default:0 >= 1 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+            }
+          }{% if not forloop.last %},{% endif %}
+          {% endwith %}
+        {% endfor %}
+      ]
+    }
+    {% endif %}
+  ]
+}
+</script>
+{% endif %}
+
+{% endwith %}
+{% endwith %}
