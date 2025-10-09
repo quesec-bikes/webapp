@@ -22,3 +22,6 @@ venv/
 
 # Static / Media
 media/
+/static/
+/staticfiles/
+
