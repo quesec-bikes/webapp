@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_ckeditor_5',
+    'storages',
     'siteconfig.apps.SiteConfigConfig',
     'shop',
     'pages',
@@ -156,6 +157,12 @@ else:
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-south-1")
+    AWS_S3_FILE_OVERWRITE = False           
+    AWS_DEFAULT_ACL = None                  
+    AWS_QUERYSTRING_AUTH = False            
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=31536000, public",  
+    }
 
     # boto3 + django-storages use karna hoga
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
