@@ -152,9 +152,7 @@ STORAGES = {
 }
 
 # WhiteNoise: ignore missing sourcemaps during collectstatic
-WHITENOISE_MANIFEST_STRICT = False
-
-# (nice for local dev)
+WHITENOISE_MANIFEST_STRICT = False  
 WHITENOISE_AUTOREFRESH = DEBUG
 
 # --- Media ---
