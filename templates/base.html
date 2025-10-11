@@ -21,10 +21,11 @@
     <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
     <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
     <link rel="stylesheet " type="text/css" href="{% static 'assets/css/styles.css' %}" />
-
+    {% if branding.favicon %}
     <!-- Favicon and Touch Icons  -->
-    <link rel="shortcut icon" href="https://picsum.photos/200/300">
-    <link rel="apple-touch-icon-precomposed" href="https://picsum.photos/200/300">
+    <link rel="shortcut icon" href="{{ branding.favicon.url }}">
+    <link rel="apple-touch-icon-precomposed" href="{{ branding.favicon.url }}">
+    {% endif %}
 
 </head>
 
