@@ -351,7 +351,7 @@ class Variant(models.Model):
                 pass
 
         # 3) Last resort: ek placeholder image
-        return static("assets/images/placeholder.png")
+        return static("https://fastly.picsum.photos/id/856/200/200.jpg")
     
     def get_absolute_url(self):
         from django.urls import reverse

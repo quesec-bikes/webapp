@@ -32,11 +32,6 @@
                          data-src="{{ item.thumb }}"
                          src="{{ item.thumb }}"
                          alt="{{ item.title|default:p.title }}">
-                  {% else %}
-                    <img class="lazyload"
-                         data-src="{% static 'img/placeholder-product.png' %}"
-                         src="{% static 'img/placeholder-product.png' %}"
-                         alt="{{ item.title|default:p.title }}">
                   {% endif %}
                 </a>
 

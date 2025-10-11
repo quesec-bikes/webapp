@@ -3884,7 +3884,6 @@ header.header-bg {
 }
 
 .flat-testimonial-bg-1 {
-  background-image: url(../images/slider/image_bg_testimonials.jpg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -4479,7 +4478,6 @@ header.header-bg {
   height: 565px;
   padding-top: 112px;
   padding-left: 92px;
-  background-image: url(../images/slider/fashion-slideshow-08.jpg);
 }
 .wrap-form-newlleter .form-newlleter {
   background-color: var(--white);
