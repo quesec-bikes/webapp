@@ -139,32 +139,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# Static files
+# --- Static files ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
-STATICFILES_DIRS = [
-    BASE_DIR / "quesec" / "static",
-]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [BASE_DIR / "quesec" / "static"]
 
-# Media
+# IMPORTANT: define staticfiles storage in STORAGES (Django 5.x)
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
+}
+
+
+# --- Media ---
 if DEBUG:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
-    # Local filesystem storage (explicit, taaki shell/test me class sahi dikhe)
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-            "OPTIONS": {
-                "location": str(MEDIA_ROOT),
-                "base_url": MEDIA_URL,
-            },
-        }
+    # default storage = local filesystem
+    STORAGES["default"] = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": str(MEDIA_ROOT),
+            "base_url": MEDIA_URL,
+        },
     }
 
 else:
-    # --- S3 (prod) ---
+    # default storage = S3
     AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
@@ -173,27 +176,32 @@ else:
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=31536000, public",
-    }
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=31536000, public"}
 
-    AWS_S3_CUSTOM_DOMAIN = (
-        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-    )
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
-    # Django 4.2+/5.x way — default storage via STORAGES
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            "OPTIONS": {
-                "bucket_name": AWS_STORAGE_BUCKET_NAME,
-                "region_name": AWS_S3_REGION_NAME,
-                # optional but clean:
-                "custom_domain": AWS_S3_CUSTOM_DOMAIN,
-            },
-        }
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+        },
     }
+
+# CKEditor
+CKEDITOR_5_CONFIGS = {
+    "default": {
+        "toolbar": [
+            "bold", "italic", "|",
+            "bulletedList", "numberedList", "|",
+            "link", "undo", "redo"
+        ],
+        "height": 250,
+        "width": "100%",
+    },
+}
 
 
 # Allow SVG
