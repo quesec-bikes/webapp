@@ -9,9 +9,11 @@
                     <div class="col-xl-3 col-md-6 col-12">
                         <div class="footer-infor">
                             <div class="footer-logo">
+                                {% if branding.logo %}
                                 <a href="{{ branding.logo_link|default:'/' }}">
                                     <img src="{{ branding.logo.url }}" alt="Quesec Bikes">
                                 </a>
+                                {% endif %}
                             </div>
                             <ul>
                                 <li>
