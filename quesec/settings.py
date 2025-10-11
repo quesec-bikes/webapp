@@ -151,36 +151,49 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 if DEBUG:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+
+    # Local filesystem storage (explicit, taaki shell/test me class sahi dikhe)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "OPTIONS": {
+                "location": str(MEDIA_ROOT),
+                "base_url": MEDIA_URL,
+            },
+        }
+    }
+
 else:
-    # S3 settings
+    # --- S3 (prod) ---
     AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="ap-south-1")
-    AWS_S3_FILE_OVERWRITE = False           
-    AWS_DEFAULT_ACL = None                  
-    AWS_QUERYSTRING_AUTH = False            
+
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = False
     AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": "max-age=31536000, public",  
+        "CacheControl": "max-age=31536000, public",
     }
 
-    # boto3 + django-storages use karna hoga
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    )
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
-    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
-
-# CKEditor
-CKEDITOR_5_CONFIGS = {
-    "default": {
-        "toolbar": [
-            "bold", "italic", "|",
-            "bulletedList", "numberedList", "|",
-            "link", "undo", "redo"
-        ],
-        "height": 250,
-        "width": "100%",
-    },
-}
+    # Django 4.2+/5.x way — default storage via STORAGES
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "region_name": AWS_S3_REGION_NAME,
+                # optional but clean:
+                "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+            },
+        }
+    }
 
 
 # Allow SVG
