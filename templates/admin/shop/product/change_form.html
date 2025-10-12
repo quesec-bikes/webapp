@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  {# Show only on change page (i.e., existing object) #}
+  {% if change and original and has_change_permission %}
+    <li>
+      <a href="{% url 'admin:shop_product_duplicate_specs' original.pk %}"
+         class="historylink"
+         style="margin-left: 8px;">
+        {% trans "Duplicate Specs" %}
+      </a>
+    </li>
+  {% endif %}
+{% endblock %}

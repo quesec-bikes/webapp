@@ -3,7 +3,9 @@ from django.utils.html import format_html
 from django import forms
 from django.utils.safestring import mark_safe
 from django.urls import path, reverse
+from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponseRedirect
+from django.utils.translation import gettext_lazy as _
 import json
 
 from .models import (
@@ -92,6 +94,41 @@ class SpecificationInline(admin.TabularInline):
     extra = 1
     fields = ("title", "value", "sort_order")
     ordering = ("sort_order", "id")
+
+    def get_formset(self, request, obj=None, **kwargs):
+        FormSet = super().get_formset(request, obj, **kwargs)
+
+        prefill_id = request.GET.get("prefill_specs")
+        if prefill_id and obj is None:
+            try:
+                source = Product.objects.get(pk=prefill_id)
+            except Product.DoesNotExist:
+                return FormSet
+
+            # build clean initial list
+            init = []
+            for s in source.specifications.all().order_by("id"):
+                init.append({
+                    "title": getattr(s, "title", "") or "",
+                    "value": getattr(s, "value", "") or "",
+                    "sort_order": getattr(s, "sort_order", 0) or 0,
+                })
+
+            if not init:
+                return FormSet
+
+            extra_count = max(len(init), 1)
+
+            # Return a custom FormSet class that shows EXACTLY the initial rows (no surprises)
+            class PrefilledFormSet(FormSet):
+                extra = extra_count            # ✅ CRUCIAL: initial will fill these extra forms
+                def __init__(self, *args, **kwargs):
+                    kwargs["initial"] = init   # ✅ initial applied to those extra forms
+                    super().__init__(*args, **kwargs)
+
+            return PrefilledFormSet
+
+        return FormSet
 
 class VariantImageInline(admin.TabularInline):
     model = VariantImage
@@ -196,6 +233,26 @@ class ProductAdmin(admin.ModelAdmin):
         except Exception:
             return "-"
     preview_url.short_description = "Frontend"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                "<path:object_id>/duplicate-specs/",
+                self.admin_site.admin_view(self.duplicate_specs_prefill_view),
+                name="shop_product_duplicate_specs",
+            ),
+        ]
+        return custom + urls
+
+    def duplicate_specs_prefill_view(self, request, object_id, *args, **kwargs):
+        obj = get_object_or_404(Product, pk=object_id)
+        add_url = reverse("admin:shop_product_add")
+        target = f"{add_url}?prefill_specs={obj.pk}"
+        count = obj.specifications.count()
+        messages.info(request, f"Prefilling {count} specification(s) from: {obj}")
+        return redirect(target)
+
 
 # =========================
 # Variant Admin
