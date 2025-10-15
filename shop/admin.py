@@ -266,6 +266,7 @@ class VariantAdmin(admin.ModelAdmin):
         "sku", "product", "featured", "color_primary", "color_secondary", "size",
         "sale_price", "stock_qty", "is_active"
     )
+    list_editable = ("featured",)
     list_filter = ("featured", "is_active", "color_primary", "color_secondary", "size", "product__category")
     search_fields = ("sku", "product__title")
     inlines = [VariantImageInline, FBTLinkInline]
