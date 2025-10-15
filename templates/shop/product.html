@@ -37,7 +37,7 @@
                                 <div class="swiper-wrapper">
                                     {% for img in all_images %}
                                     <div class="swiper-slide">
-                                        <a href="{{ img.image.url }}" target="_blank" class="item">
+                                        <a class="item">
                                             <img class="tf-image-zoom lazyload" src="{{ img.image.url }}"
                                                 alt="{{ img.alt_text|default:product.title }}">
                                         </a>
