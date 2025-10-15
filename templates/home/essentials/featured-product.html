@@ -41,12 +41,8 @@
                   <div class="swiper-slide" lazy="true">
                     <div class="blog-article-item wow fadeInUp" data-wow-delay="0s">
                       <div class="article-thumb">
-                        {% if c.parent %}
-                            {% url 'shop:product_detail_child' parent_slug=c.parent.slug child_slug=c.slug slug=p.slug as purl %}
-                        {% else %}
-                            {% url 'shop:product_detail_parent' parent_slug=c.slug slug=p.slug as purl %}
-                        {% endif %}
-                        <a href="{{ purl }}?variant={{ v.id }}">
+                        
+                        <a href="{{ v.get_absolute_url }}">
                           {# Try variant image -> product image fallback #}
                           {% with vimg=v.images.all.0.image.url pimg=p.images.all.0.image.url %}
                             <img class="lazyload"
@@ -71,7 +67,7 @@
 
                       <div class="article-content">
                         <div class="article-title font-sora">
-                          <a href="{{ purl }}?variant={{ v.id }}" class="">
+                          <a href="{{ v.get_absolute_url }}" class="">
                             {# Title: Color + Product + (Size) #}
                             {% with color=v.color_label|default:"" size=v.size.name|default_if_none:"" %}
                               {{ color }} {{ p.title }}{% if size %} - {{ size }}{% endif %}
