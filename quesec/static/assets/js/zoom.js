@@ -128,12 +128,4 @@ document.addEventListener('DOMContentLoaded', mountAllGalleries);
 // Re-mount hook if gallery HTML is swapped via AJAX
 document.addEventListener('variant:images:updated', mountAllGalleries);
 
-// ---- (optional) minimal PhotoSwipe bootstrap if you’re using it elsewhere ----
-try {
-  const lightbox = new PhotoSwipeLightbox({
-    gallery: '.tf-product-media-main',
-    children: 'a',
-    pswpModule: PhotoSwipe,
-  });
-  lightbox.init();
-} catch(e) {}
+
