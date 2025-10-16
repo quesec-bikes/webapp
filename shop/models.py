@@ -24,6 +24,8 @@ class Category(models.Model):
         blank=True, null=True,
         help_text="Ideal 600x600px, <200KB"
     )
+    meta_description = models.TextField(max_length=160, blank=True)
+    meta_keywords = models.TextField(max_length=1160, blank=True)
     display_order = models.PositiveIntegerField(default=00, db_index=True)
     featured = models.BooleanField(default=False, db_index=True)
     is_active = models.BooleanField(default=True)
@@ -122,6 +124,7 @@ class Product(models.Model):
 
     # SEO
     meta_description = models.TextField(max_length=160, blank=True)
+    meta_keywords = models.TextField(max_length=1160, blank=True)
 
     # Flags
     is_active = models.BooleanField(default=True)

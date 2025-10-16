@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block topbar %} {% include 'partials/topbar.html' %} {% endblock %}
+{% block og_title %}{{ product.title }} - Quesec Bikes{% endblock %}
+{% block title %}{{ product.title }} - Quesec Bikes{% endblock %}
+{% block og_description %}{{ product.meta_description }}{% endblock %}
+{% block description %}{{ product.meta_description }}{% endblock %}
+{% block keywords %}{{ product.meta_keywords }}{% endblock %}
 
 {% block content %}
 <!-- breadcrumb -->
@@ -104,7 +108,7 @@
                                         Color & Size:
                                         <span class="fw-6 variant-picker-label-value value-currentColor">
                                             {% if selected_variant %}
-                                            {{ selected_variant.color_label }}{% if selected_variant.size %} &
+                                            {{ selected_variant.color_label }}{% if selected_variant.size %} -
                                             {{ selected_variant.size.name }}{% endif %}
                                             {% else %}
                                             {% for c in color_options %}{% if c.is_active %}{{ c.label }}

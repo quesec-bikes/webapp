@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-
-{% block topbar %} {% include 'partials/topbar.html' %} {% endblock %}
+{% block og_title %}Home - Quesec Bikes{% endblock %}
+{% block title %}Home - Quesec Bikes{% endblock %}
+{% block og_description %}{{ category.meta_description }}{% endblock %}
 
 {% block header-class %} header-absolute {% endblock %}
 

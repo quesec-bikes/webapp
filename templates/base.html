@@ -5,12 +5,30 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Quesec Bikes - Best Bicycle in India</title>
+    <title>{% block title %}Quesec Bikes - Best Bicycle in India{% endblock %}</title>
+    <meta
+      name="description"
+      content="{% block description %}Discover premium bicycles and accessories at Quesec Bikes – India’s trusted brand for foldable, geared, and mountain bikes. Shop online for quality cycles, helmets, and riding gear with fast delivery{% endblock %}"
+    />
+    <meta
+      name="keywords"
+      content="{% block keywords %}bicycle, bikes, best bicycle, best bicycle in india{% endblock %}"
+    />
+    <meta name="author" content="Mohammad Sajid Mohammad Asif Puthawala" />
+    <meta
+      property="og:title"
+      content="{% block og_title %}Quesec Bikes{% endblock %}"
+    />
+    <meta
+      property="og:description"
+      content="{% block og_description %}Discover premium bicycles and accessories at Quesec Bikes – India’s trusted brand for foldable, geared, and mountain bikes. Shop online for quality cycles, helmets, and riding gear with fast delivery{% endblock %}"
+    />
 
     <meta name="author" content="themesflat.com">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
     {% include "partials/head_seo.html" %}
+    <meta property="og:site_name" content="Quesec Bikes" />
 
     <!-- font -->
     <link rel="stylesheet" href="{% static 'assets/fonts/fonts.css' %}">

@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% block og_title %}{{ category.name }} - Quesec Bikes{% endblock %}
+{% block title %}{{ category.name }} - Quesec Bikes{% endblock %}
+{% block og_description %}{{ category.meta_description }}{% endblock %}
+{% block description %}{{ category.meta_description }}{% endblock %}
+{% block keywords %}{{ category.meta_keywords }}{% endblock %}
 {% block content %}
 
 <!-- page-title -->
