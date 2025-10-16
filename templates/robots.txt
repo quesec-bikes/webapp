@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /orders/
+Disallow: /accounts/
+Disallow: /search/
+Disallow: /page/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /compare/
+Disallow: /wishlist/
+
+Sitemap: https://quesecbikes.com/sitemap.xml

@@ -20,6 +20,8 @@ from django.db.models.functions import Coalesce, Greatest
 from orders.models import OrderItem
 from .models import Product, Category, Variant, FBTLink, Coupon, CouponRedemption, Review
 from django.contrib.auth.decorators import login_required
+from shop.utils.seo import build_canonical, is_filter_or_sort
+
 
 
 def _canonical_product_url(product):
@@ -422,6 +424,13 @@ def product_detail(request, parent_slug, slug, child_slug=None):
         product_top_reviews = list(top_high) + list(fill)
     else:
         product_top_reviews = list(top_high)
+        
+
+    seo = {
+        "index": 1,
+        "canonical": build_canonical(request, keep_variant=True),
+        "og_type": "product",
+    }
 
     context = {
         "product": product,
@@ -462,6 +471,7 @@ def product_detail(request, parent_slug, slug, child_slug=None):
         "group_rating_count": group_rating_count,
         "product_top_reviews": product_top_reviews,
         "now": timezone.now(),
+        "seo": seo,
     }
     # --- Reviews context injection ---
     if selected_variant:
@@ -1611,9 +1621,17 @@ def shop_index(request):
     # keep list in final, preserving the sorted queryset order
     non_empty_children_sorted = list(child_qs)
 
+    filtered = is_filter_or_sort(request)
+    seo = {
+        "index": 0 if filtered else 1,
+        "canonical": build_canonical(request, keep_variant=False),
+        "og_type": "website",
+    }
+
     ctx = {
         "parent_cats": parents,
         "child_cats": non_empty_children_sorted,
+        "seo": seo,
     }
     return render(request, "shop/shop.html", ctx)
 
@@ -1864,7 +1882,8 @@ def category_listing(request, parent_slug, child_slug=None):
 
     variants_page = None
     facets = {"colors": [], "sizes": []}
-    products_page = None  # backward-compat for old templates
+    products_page = None
+    vfiltered = None 
 
     if show_variants:
         # base variants for this category's direct products
@@ -1894,6 +1913,13 @@ def category_listing(request, parent_slug, child_slug=None):
     if 'page' in qs_keep:
         del qs_keep['page']
     qs_keep_str = qs_keep.urlencode()
+    filtered = is_filter_or_sort(request)
+
+    seo = {
+        "index": 0 if filtered else 1,
+        "canonical": build_canonical(request, keep_variant=False),
+        "og_type": "website",
+    }
 
     tpl = "categories/child.html" if (category.parent_id and child_slug) else "categories/parent.html"
 
@@ -1915,6 +1941,7 @@ def category_listing(request, parent_slug, child_slug=None):
             "sort": request.GET.get("sort") or "",
         },
         "qs_keep": qs_keep_str,
+        "seo": seo,
     }
     return render(request, tpl, ctx)
 

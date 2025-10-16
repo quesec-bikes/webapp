@@ -1,0 +1,14 @@
+{# templates/partials/head_seo.html #}
+{% with seo_index=seo.index|default:0 seo_canonical=seo.canonical|default:request.build_absolute_uri %}
+
+  {% if seo_index %}
+    <meta name="robots" content="index,follow"/>
+  {% else %}
+    <meta name="robots" content="noindex,nofollow"/>
+  {% endif %}
+
+    <link rel="canonical" href="{{ seo_canonical }}"/>
+
+    <meta property="og:url" content="{{ seo_canonical }}"/>
+    <meta property="og:type" content="{{ seo.og_type|default:'website' }}"/>
+{% endwith %}

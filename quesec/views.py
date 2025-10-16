@@ -4,12 +4,11 @@ from django.urls import reverse
 from django.shortcuts import render
 from siteconfig.models import SiteBranding, ContactBlock, SocialLink
 from shop.models import Variant
-from shop.utils import deal_progress
+from shop.utils.deal_progress import deal_progress
 from shop.services.featured import get_featured_tabs, get_featured_categories_tabs
 from shop.services.testimonials import get_home_testimonials
 from shop.models import Category
-
-
+from shop.utils.seo import build_canonical
 
 def _canonical_product_url(product):
     cat = product.category
@@ -77,6 +76,12 @@ def home(request):
     branding = SiteBranding.objects.first()
     contact_block = ContactBlock.objects.first()
     social_links = list(SocialLink.objects.filter(is_active=True))
+
+    seo = {
+        "index": 1,
+        "canonical": build_canonical(request, keep_variant=False),
+        "og_type": "website",
+    }
     ctx = {
         "deal_cards": deal_cards,
         "featured_tabs": featured_tabs, 
@@ -86,6 +91,7 @@ def home(request):
         "branding": branding,
         "contact_block": contact_block,
         "social_links": social_links,
+        "seo": seo,
     }
     return render(request, "home/index.html", ctx)
 

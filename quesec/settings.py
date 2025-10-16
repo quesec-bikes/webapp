@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_ckeditor_5',
     'storages',
     'siteconfig.apps.SiteConfigConfig',
+    'django.contrib.sitemaps',
     'shop',
     'pages',
     'cart',
@@ -67,6 +68,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'quesec.urls'
+
+SITE_NAME = "Quesec Bikes"
+SITE_URL = "https://quesecbikes.com"
 
 TEMPLATES = [
     {

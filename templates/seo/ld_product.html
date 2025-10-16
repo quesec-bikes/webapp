@@ -7,7 +7,7 @@
   "@type": "ProductGroup",
   "@id": "{{ host }}{{ request.path }}#product-group",
   "name": "{{ product.title|escapejs }}",
-  "description": "{{ product.short_description|default_if_none:''|striptags|truncatechars:300|escapejs }}",
+  "description": "{{ product.meta_description|default_if_none:''|striptags|truncatechars:300|escapejs }}",
   {% if product.category %}
   "category": "{{ product.category.get_full_path_display|default:product.category.name|escapejs }}",
   {% endif %}

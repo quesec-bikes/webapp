@@ -19,9 +19,34 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from django.views.generic import TemplateView
+from django.contrib.sitemaps.views import index as sitemap_index, sitemap as sitemap_view
+from siteconfig.sitemaps import SITEMAPS, HomeSitemap, ShopSitemap, CategorySitemap, ProductVariantSitemap
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # robots.txt (text/plain)
+    path(
+        "robots.txt",
+        TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+        name="robots_txt",
+    ),
+
+    # Sitemaps
+    path(
+        "sitemap.xml",
+        sitemap_index,
+        {"sitemaps": SITEMAPS, "sitemap_url_name": "sitemaps"},
+        name="sitemap-index",
+    ),
+    # Child files (dynamic; 'section' must match keys in SITEMAPS)
+    path(
+        "sitemap-<section>.xml",
+        sitemap_view,
+        {"sitemaps": SITEMAPS},
+        name="sitemaps",
+    ),
 
     # home
     path("", views.home, name="home"),
